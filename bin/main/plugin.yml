@@ -1,8 +1,0 @@
-name: NoNetheritePlus
-version: 1.3.0
-main: com.example.nonetheriteexpanded.NoNetheriteExpanded
-api-version: '1.21'
-description: Configure how you want netherite to be managed.
-authors:
-  - SushiMC
-website: https://github.com/codingsushi79/nonetheriteplus

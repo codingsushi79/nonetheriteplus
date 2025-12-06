@@ -34,11 +34,11 @@ The compiled JAR will be located in `build/libs/NoNetheritePlus-1.3.0.jar`
 
 1. Copy the JAR file to your server's `plugins/` directory
 2. Restart the server
-3. The plugin will automatically create a `NoNetheriteExpanded` folder with `config.yml`
+3. The plugin will automatically create a `NoNetheritePlus` folder with `config.yml`
 
 ## Configuration
 
-The plugin creates a `config.yml` file in `plugins/NoNetheriteExpanded/` on first startup. Edit this file to customize behavior:
+The plugin creates a `config.yml` file in `plugins/NoNetheritePlus/` on first startup. Edit this file to customize behavior:
 
 ### Netherite Armor Settings
 ```yaml
