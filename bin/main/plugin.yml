@@ -2,7 +2,7 @@ name: NoNetheriteExpanded
 version: 1.0.0
 main: com.example.nonetheriteexpanded.NoNetheriteExpanded
 api-version: '1.21'
-description: Removes netherite armor recipes and refunds materials when attempting to craft
+description: Configure how you want netherite to be managed.
 authors:
   - SushiMC
 website: https://github.com/codingsushi79/nonetheriteplus
