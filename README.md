@@ -1,6 +1,6 @@
 # NoNetheriteExpanded
 
-A Minecraft plugin for Paper/Spigot 1.21.10 that provides configurable netherite crafting restrictions with material refund system.
+A Minecraft plugin for Paper/Spigot 1.21+ that provides configurable netherite crafting restrictions with material refund system.
 
 ## Features
 
@@ -79,6 +79,6 @@ After changing the config, restart your server or use a plugin manager to reload
 
 ## Compatibility
 
-- Minecraft 1.21.10
+- Minecraft 1.21+
 - Paper/Spigot servers
 - Requires Java 21
