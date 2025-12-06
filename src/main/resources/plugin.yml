@@ -1,5 +1,5 @@
 name: NoNetheritePlus
-version: 1.3.0
+version: 1.4.0
 main: com.example.nonetheriteplus.NoNetheritePlus
 api-version: '1.21'
 description: Configurable netherite crafting restrictions with material refund system and template control
@@ -9,7 +9,7 @@ website: https://github.com/codingsushi79/nonetheriteplus
 commands:
   nonetherite:
     description: Shows NoNetheritePlus plugin information
-    usage: /nonetherite [reload] # Optional, reloads the config.
+    usage: /nonetherite [reload|stats|debug|preset] # Various subcommands available
     permission: nonetherite.info
 permissions:
   nonetherite.info:
@@ -17,4 +17,13 @@ permissions:
     default: true
   nonetherite.reload:
     description: Allows reloading the plugin configuration
+    default: op
+  nonetherite.stats:
+    description: Allows viewing plugin statistics
+    default: op
+  nonetherite.debug:
+    description: Allows toggling debug mode
+    default: op
+  nonetherite.preset:
+    description: Allows managing configuration presets
     default: op

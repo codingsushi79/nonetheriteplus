@@ -19,3 +19,38 @@ disable_netherite_hoe: false
 refund_materials: true
 refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
 disable_upgrade_templates: false
+
+# Statistics & Analytics
+statistics:
+  enabled: true
+  track_refunds: true
+  track_blocked_crafts: true
+  track_template_removals: true
+  reset_on_reload: false
+  log_to_file: false
+
+# Debug Mode
+debug:
+  enabled: false
+  log_loot_events: false
+  log_craft_events: false
+  log_config_changes: true
+  verbose_messages: false
+
+# World-Specific Configurations
+worlds:
+  default:
+    disable_netherite_helmet: true
+    disable_netherite_chestplate: true
+    disable_netherite_leggings: true
+    disable_netherite_boots: true
+    disable_netherite_sword: false
+    disable_netherite_pickaxe: false
+    disable_netherite_axe: false
+    disable_netherite_shovel: false
+    disable_netherite_hoe: false
+    disable_upgrade_templates: false
+    refund_materials: true
+
+# Configuration Presets (auto-generated)
+presets: {}
