@@ -39,18 +39,10 @@ debug:
 
 # World-Specific Configurations
 worlds:
-  default:
-    disable_netherite_helmet: true
-    disable_netherite_chestplate: true
-    disable_netherite_leggings: true
-    disable_netherite_boots: true
-    disable_netherite_sword: false
-    disable_netherite_pickaxe: false
-    disable_netherite_axe: false
-    disable_netherite_shovel: false
-    disable_netherite_hoe: false
-    disable_upgrade_templates: false
-    refund_materials: true
+  world:
+  world_nether:
+  world_end:
+# If an item is not specified, the global config will be used.
 
 # Configuration Presets (auto-generated)
 presets: {}

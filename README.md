@@ -102,11 +102,9 @@ worlds:
   world_nether:       # Different settings per world
     disable_upgrade_templates: true
     disable_all_netherite: true
-  default:            # Fallback for unspecified worlds
-    disable_netherite_helmet: true
-    disable_netherite_chestplate: true
-    disable_netherite_leggings: true
-    disable_netherite_boots: true
+  world_end:          # Add other worlds as needed
+    disable_upgrade_templates: true
+# Settings fall back to global config for unspecified worlds
 ```
 
 ### Configuration Reload

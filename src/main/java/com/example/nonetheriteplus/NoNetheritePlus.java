@@ -334,14 +334,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
             }
         }
 
-        // Fall back to default config
-        if (worldConfigs.containsKey("default")) {
-            Map<String, Object> defaultConfig = worldConfigs.get("default");
-            String configKey = "disable_" + material.name().toLowerCase();
-            if (defaultConfig.containsKey(configKey)) {
-                return (Boolean) defaultConfig.get(configKey);
-            }
-        }
+        // Fall back to global config
 
         // Fall back to global config
         return isDisabledNetheriteItem(material);
@@ -357,13 +350,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
             }
         }
 
-        // Fall back to default world config
-        if (worldConfigs.containsKey("default")) {
-            Map<String, Object> defaultConfig = worldConfigs.get("default");
-            if (defaultConfig.containsKey(key)) {
-                return (Boolean) defaultConfig.get(key);
-            }
-        }
+        // Fall back to global config
 
         // Fall back to global config
         return config.getBoolean(key, defaultValue);
