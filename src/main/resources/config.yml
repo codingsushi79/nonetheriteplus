@@ -18,3 +18,4 @@ disable_netherite_hoe: false
 # General Settings
 refund_materials: true
 refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
+disable_upgrade_templates: false

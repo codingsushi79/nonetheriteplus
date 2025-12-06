@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareSmithingEvent;
+import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmithingRecipe;
@@ -165,6 +166,16 @@ public class NoNetheriteExpanded extends JavaPlugin implements Listener, Command
                 return Material.DIAMOND_HOE;
             default:
                 return null;
+        }
+    }
+
+    @EventHandler
+    public void onLootGenerate(LootGenerateEvent event) {
+        if (config.getBoolean("disable_upgrade_templates", false)) {
+            // Remove netherite upgrade templates from loot
+            event.getLoot().removeIf(itemStack ->
+                itemStack.getType() == Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE
+            );
         }
     }
 

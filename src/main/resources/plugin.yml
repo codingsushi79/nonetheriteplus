@@ -1,8 +1,8 @@
 name: NoNetheriteExpanded
-version: 1.2.0
+version: 1.3.0
 main: com.example.nonetheriteexpanded.NoNetheriteExpanded
 api-version: '1.21'
-description: Configurable netherite crafting restrictions with material refund system
+description: Configurable netherite crafting restrictions with material refund system and template control
 authors:
   - SushiMC
 website: https://github.com/codingsushi79/nonetheriteplus

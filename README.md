@@ -1,4 +1,4 @@
-# NoNetheriteExpanded
+# NoNetheritePlus
 
 A Minecraft plugin for Paper/Spigot 1.21+ that provides configurable netherite crafting restrictions with material refund system.
 
@@ -6,6 +6,7 @@ A Minecraft plugin for Paper/Spigot 1.21+ that provides configurable netherite c
 
 - **Configurable Restrictions**: Choose which netherite items to disable (armor, tools, or both)
 - **Material Refund System**: Automatically refunds base materials when crafting is attempted
+- **Template Control**: Option to completely disable netherite upgrade templates from spawning
 - **Custom Messages**: Configurable refund notification messages
 - **Per-Item Control**: Enable/disable each netherite item individually
 - **Automatic Setup**: Creates config folder and file on first startup
@@ -27,7 +28,7 @@ gradle build
 ./gradlew build
 ```
 
-The compiled JAR will be located in `build/libs/NoNetheriteExpanded-1.2.0.jar`
+The compiled JAR will be located in `build/libs/NoNetheritePlus-1.3.0.jar`
 
 ## Installation
 
@@ -62,6 +63,7 @@ disable_netherite_hoe: false        # Default: false
 ```yaml
 refund_materials: true  # Whether to refund materials when crafting is disabled
 refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
+disable_upgrade_templates: false  # Whether to prevent netherite upgrade templates from spawning in loot
 ```
 
 ### Configuration Reload
