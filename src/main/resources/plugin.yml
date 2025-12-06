@@ -1,6 +1,6 @@
-name: NoNetheriteExpanded
+name: NoNetheritePlus
 version: 1.3.0
-main: com.example.nonetheriteexpanded.NoNetheriteExpanded
+main: com.example.nonetheriteplus.NoNetheritePlus
 api-version: '1.21'
 description: Configurable netherite crafting restrictions with material refund system and template control
 authors:
@@ -8,7 +8,7 @@ authors:
 website: https://github.com/codingsushi79/nonetheriteplus
 commands:
   nonetherite:
-    description: Shows NoNetheriteExpanded plugin information
+    description: Shows NoNetheritePlus plugin information
     usage: /nonetherite [reload] # Optional, reloads the config.
     permission: nonetherite.info
 permissions:
