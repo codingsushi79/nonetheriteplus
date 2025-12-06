@@ -4,5 +4,5 @@ main: com.example.nonetheriteexpanded.NoNetheriteExpanded
 api-version: '1.21'
 description: Removes netherite armor recipes and refunds materials when attempting to craft
 authors:
-  - YourName
-website: https://github.com/yourname/nonetherite-expanded
+  - SushiMC
+website: https://github.com/codingsushi79/nonetheriteplus
