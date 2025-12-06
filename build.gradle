@@ -27,5 +27,5 @@ dependencies {
 }
 
 jar {
-    archiveFileName = "NoNetheriteExpanded-${version}.jar"
+    archiveFileName = "NoNetheritePlus-${version}.jar"
 }
