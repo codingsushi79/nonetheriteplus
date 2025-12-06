@@ -4,12 +4,12 @@ main: com.example.nonetheriteexpanded.NoNetheriteExpanded
 api-version: '1.21'
 description: Configurable netherite crafting restrictions with material refund system
 authors:
-  - YourName
-website: https://github.com/yourname/nonetherite-expanded
+  - SushiMC
+website: https://github.com/codingsushi79/nonetheriteplus
 commands:
   nonetherite:
     description: Shows NoNetheriteExpanded plugin information
-    usage: /<command> [reload]
+    usage: /nonetherite [reload] # Optional, reloads the config.
     permission: nonetherite.info
 permissions:
   nonetherite.info:
