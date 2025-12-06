@@ -1,0 +1,20 @@
+# NoNetheriteExpanded Configuration
+# Set to true to disable crafting of netherite items and enable refund system
+# Set to false to allow normal crafting
+
+# Netherite Armor
+disable_netherite_helmet: true
+disable_netherite_chestplate: true
+disable_netherite_leggings: true
+disable_netherite_boots: true
+
+# Netherite Tools
+disable_netherite_sword: false
+disable_netherite_pickaxe: false
+disable_netherite_axe: false
+disable_netherite_shovel: false
+disable_netherite_hoe: false
+
+# General Settings
+refund_materials: true
+refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
