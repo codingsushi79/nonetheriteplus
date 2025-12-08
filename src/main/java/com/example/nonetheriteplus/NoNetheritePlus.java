@@ -361,7 +361,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         if (command.getName().equalsIgnoreCase("nonetherite")) {
             if (args.length == 0) {
                 // Show plugin info
-                sender.sendMessage("§6=== NoNetheritePlus ===");
+                sender.sendMessage("§6=== No Netherite+ ===");
                 sender.sendMessage("§eVersion: §f" + getDescription().getVersion());
                 sender.sendMessage("§eAuthor: §f" + String.join(", ", getDescription().getAuthors()));
                 sender.sendMessage("§eDescription: §f" + getDescription().getDescription());

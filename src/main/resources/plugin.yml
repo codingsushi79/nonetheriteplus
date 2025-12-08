@@ -4,7 +4,7 @@ main: com.example.nonetheriteplus.NoNetheritePlus
 api-version: '1.21'
 description: Configurable netherite crafting restrictions with material refund system and template control
 authors:
-  - SushiMC
+  - SushiMC, SquareDealSam
 website: https://github.com/codingsushi79/nonetheriteplus
 commands:
   nonetherite:
