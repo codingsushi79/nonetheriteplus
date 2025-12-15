@@ -7,6 +7,7 @@ disable_netherite_helmet: true
 disable_netherite_chestplate: true
 disable_netherite_leggings: true
 disable_netherite_boots: true
+disable_netherite_horse_armor: true
 
 # Netherite Tools
 disable_netherite_sword: false
@@ -14,6 +15,7 @@ disable_netherite_pickaxe: false
 disable_netherite_axe: false
 disable_netherite_shovel: false
 disable_netherite_hoe: false
+disable_netherite_spear: false
 
 # General Settings
 refund_materials: true

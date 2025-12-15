@@ -119,6 +119,10 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
                 return config.getBoolean("disable_netherite_shovel", false);
             case NETHERITE_HOE:
                 return config.getBoolean("disable_netherite_hoe", false);
+            case NETHERITE_SPEAR:
+                return config.getBoolean("disable_netherite_spear", false);
+            case NETHERITE_HORSE_ARMOR:
+                return config.getBoolean("disable_netherite_horse_armor", true);
             default:
                 return false;
         }
@@ -212,6 +216,8 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
                 return Material.DIAMOND_SHOVEL;
             case NETHERITE_HOE:
                 return Material.DIAMOND_HOE;
+            case NETHERITE_HORSE_ARMOR:
+                return Material.DIAMOND_HORSE_ARMOR;
             default:
                 return null;
         }
@@ -266,7 +272,8 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         for (Material material : Arrays.asList(
             Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
             Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
-            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE)) {
+            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE,
+            Material.NETHERITE_SPEAR, Material.NETHERITE_HORSE_ARMOR)) {
             String key = material.name().toLowerCase() + "_blocked";
             statistics.put(key, statsConfig.getInt(key, 0));
         }
@@ -435,7 +442,8 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         for (Material material : Arrays.asList(
             Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
             Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
-            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE)) {
+            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE,
+            Material.NETHERITE_SPEAR, Material.NETHERITE_HORSE_ARMOR)) {
             String key = material.name().toLowerCase() + "_blocked";
             int count = statistics.getOrDefault(key, 0);
             if (count > 0) {
