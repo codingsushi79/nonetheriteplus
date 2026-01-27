@@ -2,8 +2,8 @@ plugins {
     id 'java'
 }
 
-group = 'com.example'
-version = '1.4.1'
+group = 'com.codingsushi'
+version = '1.4.2'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
