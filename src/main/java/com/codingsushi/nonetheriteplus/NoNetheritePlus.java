@@ -1,4 +1,4 @@
-package com.example.nonetheriteplus;
+package com.codingsushi.nonetheriteplus;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

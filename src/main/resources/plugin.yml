@@ -1,6 +1,6 @@
 name: NoNetheritePlus
 version: 1.4.0
-main: com.example.nonetheriteplus.NoNetheritePlus
+main: com.codingsushi.nonetheriteplus.NoNetheritePlus
 api-version: '1.21'
 description: Configurable netherite crafting restrictions with material refund system and template control
 authors:
