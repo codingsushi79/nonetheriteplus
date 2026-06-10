@@ -1,6 +1,6 @@
 # NoNetheritePlus
 
-A Minecraft plugin for Paper/Spigot 1.21+ that provides configurable netherite crafting restrictions with material refund system.
+A Minecraft plugin for Paper/Spigot 1.26+ that provides configurable netherite crafting restrictions with material refund system.
 
 ## Features
 
@@ -20,7 +20,7 @@ A Minecraft plugin for Paper/Spigot 1.21+ that provides configurable netherite c
 
 ### Prerequisites
 
-- Java 21
+- Java 25
 - Gradle
 
 ### Build Commands
@@ -33,7 +33,7 @@ gradle build
 ./gradlew build
 ```
 
-The compiled JAR will be located in `build/libs/NoNetheritePlus-1.4.0.jar`
+The compiled JAR will be located in `build/libs/NoNetheritePlus-1.4.3.jar`
 
 ## Installation
 
@@ -131,6 +131,6 @@ After changing the config, restart your server or use a plugin manager to reload
 
 ## Compatibility
 
-- Minecraft 1.21+
+- Minecraft 1.26+
 - Paper/Spigot servers
-- Requires Java 21
+- Requires Java 25

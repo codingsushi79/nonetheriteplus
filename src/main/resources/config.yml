@@ -30,12 +30,19 @@ refund_materials: true
 refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
 disable_upgrade_templates: false
 
+# Periodic Netherite Purge
+# Removes all netherite items from online players on a timer
+periodic_purge:
+  enabled: false
+  interval_seconds: 60
+
 # Statistics & Analytics
 statistics:
   enabled: true
   track_refunds: true
   track_blocked_crafts: true
   track_template_removals: true
+  track_purged_items: true
   reset_on_reload: false
   log_to_file: false
 

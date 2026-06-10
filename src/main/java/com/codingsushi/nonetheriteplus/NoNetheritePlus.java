@@ -2,7 +2,6 @@ package com.codingsushi.nonetheriteplus;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -15,16 +14,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.PrepareSmithingEvent;
 import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
 import org.bukkit.inventory.SmithingRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,6 +42,16 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
 
     // Debug mode flag
     private boolean debugMode = false;
+
+    private BukkitTask purgeTask;
+
+    private static final Material[] NETHERITE_MATERIALS = {
+        Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
+        Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
+        Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE,
+        Material.NETHERITE_SPEAR, Material.NETHERITE_HORSE_ARMOR, Material.NETHERITE_INGOT,
+        Material.NETHERITE_SCRAP, Material.NETHERITE_BLOCK, Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE
+    };
 
     @Override
     public void onEnable() {
@@ -67,6 +77,8 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         // Remove disabled netherite recipes
         removeDisabledNetheriteRecipes();
 
+        startPeriodicPurge();
+
         if (debugMode) {
             getLogger().info("Debug mode enabled");
         }
@@ -76,9 +88,101 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
 
     @Override
     public void onDisable() {
+        stopPeriodicPurge();
         // Save statistics before shutdown
         saveStatistics();
         getLogger().info("NoNetheritePlus plugin disabled!");
+    }
+
+    private void startPeriodicPurge() {
+        stopPeriodicPurge();
+
+        if (!config.getBoolean("periodic_purge.enabled", false)) {
+            return;
+        }
+
+        long intervalSeconds = Math.max(1, config.getLong("periodic_purge.interval_seconds", 60));
+        long intervalTicks = intervalSeconds * 20L;
+
+        purgeTask = getServer().getScheduler().runTaskTimer(this, this::purgeNetheriteFromAllPlayers, intervalTicks, intervalTicks);
+
+        if (debugMode) {
+            getLogger().info("Periodic netherite purge enabled (every " + intervalSeconds + " seconds)");
+        }
+    }
+
+    private void stopPeriodicPurge() {
+        if (purgeTask != null) {
+            purgeTask.cancel();
+            purgeTask = null;
+        }
+    }
+
+    private void purgeNetheriteFromAllPlayers() {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            int removed = removeNetheriteFromPlayer(player);
+
+            if (removed > 0) {
+                incrementStatistic("total_purged_items", removed);
+
+                if (debugMode) {
+                    getLogger().info("Removed " + removed + " netherite item(s) from " + player.getName());
+                }
+            }
+        }
+    }
+
+    private int removeNetheriteFromPlayer(Player player) {
+        int removed = 0;
+        PlayerInventory inventory = player.getInventory();
+
+        ItemStack[] storage = inventory.getStorageContents();
+        removed += clearNetheriteItems(storage);
+        inventory.setStorageContents(storage);
+
+        ItemStack[] armor = inventory.getArmorContents();
+        removed += clearNetheriteItems(armor);
+        inventory.setArmorContents(armor);
+
+        ItemStack offHand = inventory.getItemInOffHand();
+        if (isNetheriteMaterial(offHand)) {
+            removed += offHand.getAmount();
+            inventory.setItemInOffHand(null);
+        }
+
+        return removed;
+    }
+
+    private int clearNetheriteItems(ItemStack[] items) {
+        int removed = 0;
+
+        for (int i = 0; i < items.length; i++) {
+            ItemStack item = items[i];
+            if (isNetheriteMaterial(item)) {
+                removed += item.getAmount();
+                items[i] = null;
+            }
+        }
+
+        return removed;
+    }
+
+    private boolean isNetheriteMaterial(ItemStack item) {
+        return item != null && isNetheriteMaterial(item.getType());
+    }
+
+    private boolean isNetheriteMaterial(Material material) {
+        if (material == null) {
+            return false;
+        }
+
+        for (Material netheriteMaterial : NETHERITE_MATERIALS) {
+            if (material == netheriteMaterial) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void removeDisabledNetheriteRecipes() {
@@ -267,6 +371,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         statistics.put("total_refunds", statsConfig.getInt("total_refunds", 0));
         statistics.put("total_blocked_crafts", statsConfig.getInt("total_blocked_crafts", 0));
         statistics.put("total_template_removals", statsConfig.getInt("total_template_removals", 0));
+        statistics.put("total_purged_items", statsConfig.getInt("total_purged_items", 0));
 
         // Load item-specific statistics
         for (Material material : Arrays.asList(
@@ -297,11 +402,19 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
     }
 
     private void incrementStatistic(String key) {
+        incrementStatistic(key, 1);
+    }
+
+    private void incrementStatistic(String key, int amount) {
         if (!config.getBoolean("statistics.enabled", true)) {
             return;
         }
 
-        statistics.merge(key, 1, Integer::sum);
+        if (key.equals("total_purged_items") && !config.getBoolean("statistics.track_purged_items", true)) {
+            return;
+        }
+
+        statistics.merge(key, amount, Integer::sum);
 
         if (config.getBoolean("statistics.log_to_file", false)) {
             saveStatistics();
@@ -418,6 +531,8 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         // Re-remove recipes based on new config
         removeDisabledNetheriteRecipes();
 
+        startPeriodicPurge();
+
         sender.sendMessage("§aNoNetheritePlus configuration reloaded successfully!");
         return true;
     }
@@ -437,6 +552,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         sender.sendMessage("§eTotal Refunds: §f" + statistics.getOrDefault("total_refunds", 0));
         sender.sendMessage("§eTotal Blocked Crafts: §f" + statistics.getOrDefault("total_blocked_crafts", 0));
         sender.sendMessage("§eTemplates Removed: §f" + statistics.getOrDefault("total_template_removals", 0));
+        sender.sendMessage("§eItems Purged: §f" + statistics.getOrDefault("total_purged_items", 0));
 
         sender.sendMessage("§7--- Item Breakdown ---");
         for (Material material : Arrays.asList(
