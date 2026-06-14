@@ -134,3 +134,20 @@ After changing the config, restart your server or use a plugin manager to reload
 - Minecraft 1.26+
 - Paper/Spigot servers
 - Requires Java 25
+
+## Releasing
+
+Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds the JAR, uploads it to [Modrinth](https://modrinth.com/plugin/nonetherite+), and attaches it to the GitHub release.
+
+### One-time setup
+
+1. Create a Modrinth PAT at [modrinth.com/settings/pats](https://modrinth.com/settings/pats) with the **Create versions** scope.
+2. In your GitHub repo, go to **Settings → Secrets and variables → Actions** and add:
+   - `MODRINTH_TOKEN` — your Modrinth PAT
+
+### Publish a new version
+
+1. Bump the default version in `build.gradle` (or rely on the release tag — the workflow passes `-PreleaseVersion` from the tag).
+2. Create a GitHub release with a tag like `v1.4.3` (the `v` prefix is optional).
+3. Write release notes — these become the Modrinth changelog.
+4. Publish the release. The **Release** workflow handles the rest.

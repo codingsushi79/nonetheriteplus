@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (e.g. 1.4.4)
+        required: true
+      changelog:
+        description: Changelog (markdown)
+        required: false
+        default: ''
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version from release
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            CHANGELOG="${{ github.event.release.body }}"
+            RELEASE_NAME="${{ github.event.release.name }}"
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+            CHANGELOG="${{ github.event.inputs.changelog }}"
+            RELEASE_NAME="NoNetheritePlus ${{ github.event.inputs.version }}"
+            RELEASE_TAG="v${{ github.event.inputs.version }}"
+          fi
+          VERSION="${VERSION#v}"
+          {
+            echo "VERSION=$VERSION"
+            echo "RELEASE_NAME=$RELEASE_NAME"
+            echo "RELEASE_TAG=$RELEASE_TAG"
+            echo "CHANGELOG<<EOF"
+            echo "$CHANGELOG"
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: temurin
+          cache: gradle
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon -PreleaseVersion="$VERSION"
+
+      - name: Upload to Modrinth
+        uses: cloudnode-pro/modrinth-publish@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project: HWcWUr8v
+          name: ${{ env.RELEASE_NAME }}
+          version: ${{ env.VERSION }}
+          changelog: ${{ env.CHANGELOG }}
+          loaders: |-
+            paper
+            spigot
+            bukkit
+          game-versions: |-
+            26.1.x
+          files: build/libs/NoNetheritePlus-${{ env.VERSION }}.jar
+
+      - name: Upload jar to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/NoNetheritePlus-${VERSION}.jar" --clobber

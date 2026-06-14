@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.codingsushi'
-version = '1.4.3'
+version = findProperty('releaseVersion') ?: '1.4.4'
 
 java {
     toolchain {
@@ -29,4 +29,10 @@ dependencies {
 
 jar {
     archiveFileName = "NoNetheritePlus-${version}.jar"
+}
+
+processResources {
+    filesMatching('plugin.yml') {
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: version.toString()])
+    }
 }
