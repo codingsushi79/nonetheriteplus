@@ -22,27 +22,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set version from release
+      - name: Set version metadata
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
             VERSION="${{ github.event.release.tag_name }}"
-            CHANGELOG="${{ github.event.release.body }}"
             RELEASE_NAME="${{ github.event.release.name }}"
             RELEASE_TAG="${{ github.event.release.tag_name }}"
           else
             VERSION="${{ github.event.inputs.version }}"
-            CHANGELOG="${{ github.event.inputs.changelog }}"
             RELEASE_NAME="NoNetheritePlus ${{ github.event.inputs.version }}"
             RELEASE_TAG="v${{ github.event.inputs.version }}"
           fi
           VERSION="${VERSION#v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "RELEASE_NAME=$RELEASE_NAME" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+
+      - name: Set changelog
+        env:
+          RELEASE_BODY: ${{ github.event.release.body }}
+          MANUAL_CHANGELOG: ${{ github.event.inputs.changelog }}
+        run: |
           {
-            echo "VERSION=$VERSION"
-            echo "RELEASE_NAME=$RELEASE_NAME"
-            echo "RELEASE_TAG=$RELEASE_TAG"
-            echo "CHANGELOG<<EOF"
-            echo "$CHANGELOG"
-            echo "EOF"
+            echo 'CHANGELOG<<EOF'
+            if [ "${{ github.event_name }}" = "release" ]; then
+              printf '%s\n' "$RELEASE_BODY"
+            else
+              printf '%s\n' "$MANUAL_CHANGELOG"
+            fi
+            echo 'EOF'
           } >> "$GITHUB_ENV"
 
       - name: Set up JDK 25
