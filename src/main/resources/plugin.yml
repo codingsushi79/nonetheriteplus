@@ -9,7 +9,7 @@
 name: NoNetheritePlus
 version: '@VERSION@'
 main: com.codingsushi.nonetheriteplus.NoNetheritePlus
-api-version: '1.26'
+api-version: '@API_VERSION@'
 description: Configurable netherite crafting restrictions with material refund system and template control
 authors:
   - SushiMC, SquareDealSam

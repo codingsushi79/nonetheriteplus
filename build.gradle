@@ -5,9 +5,41 @@ plugins {
 group = 'com.codingsushi'
 version = findProperty('releaseVersion') ?: '1.4.5'
 
+def mcTarget = findProperty('mcTarget') ?: '26'
+
+def targetConfigs = [
+    '26': [
+        paperApi       : 'io.papermc.paper:paper-api:26.1.2.build.69-stable',
+        javaVersion    : 25,
+        apiVersion     : '1.26',
+        gameVersionTag : '26.x.x',
+    ],
+    '1.21': [
+        paperApi       : 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT',
+        javaVersion    : 21,
+        apiVersion     : '1.21',
+        gameVersionTag : '1.21.x',
+    ],
+]
+
+if (!targetConfigs.containsKey(mcTarget)) {
+    throw new GradleException("Unknown mcTarget '${mcTarget}'. Expected one of: ${targetConfigs.keySet()}")
+}
+
+def activeTarget = targetConfigs[mcTarget]
+
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
+        languageVersion = JavaLanguageVersion.of(activeTarget.javaVersion)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir "src/${mcTarget}/java"
+        }
     }
 }
 
@@ -24,15 +56,18 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:26.1.2.build.69-stable'
+    compileOnly activeTarget.paperApi
 }
 
 jar {
-    archiveFileName = "NoNetheritePlus-${version}.jar"
+    archiveFileName = "NoNetheritePlus-${version}-${activeTarget.gameVersionTag}.jar"
 }
 
 processResources {
     filesMatching('plugin.yml') {
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [VERSION: version.toString()])
+        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+            VERSION     : version.toString(),
+            API_VERSION : activeTarget.apiVersion,
+        ])
     }
 }

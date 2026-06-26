@@ -47,13 +47,16 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
 
     private BukkitTask purgeTask;
 
-    private static final Material[] NETHERITE_MATERIALS = {
+    private static final Material[] BASE_NETHERITE_MATERIALS = {
         Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
         Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
         Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE,
-        Material.NETHERITE_SPEAR, Material.NETHERITE_HORSE_ARMOR, Material.NETHERITE_INGOT,
-        Material.NETHERITE_SCRAP, Material.NETHERITE_BLOCK, Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE
+        Material.NETHERITE_INGOT, Material.NETHERITE_SCRAP, Material.NETHERITE_BLOCK,
+        Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE
     };
+
+    private static final Material[] NETHERITE_MATERIALS = combineMaterials(
+        BASE_NETHERITE_MATERIALS, NetheriteCatalog.extraNetheriteMaterials());
 
     @Override
     public void onEnable() {
@@ -210,6 +213,11 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
     }
 
     private boolean isDisabledNetheriteItem(Material material) {
+        Boolean versionSpecific = NetheriteCatalog.getDisabledOverride(material, config);
+        if (versionSpecific != null) {
+            return versionSpecific;
+        }
+
         switch (material) {
             case NETHERITE_HELMET:
                 return config.getBoolean("disable_netherite_helmet", true);
@@ -229,10 +237,6 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
                 return config.getBoolean("disable_netherite_shovel", false);
             case NETHERITE_HOE:
                 return config.getBoolean("disable_netherite_hoe", false);
-            case NETHERITE_SPEAR:
-                return config.getBoolean("disable_netherite_spear", false);
-            case NETHERITE_HORSE_ARMOR:
-                return config.getBoolean("disable_netherite_horse_armor", true);
             default:
                 return false;
         }
@@ -342,6 +346,11 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
     }
 
     private Material getExpectedInputForNetheriteItem(Material netheriteItem) {
+        Material versionSpecific = NetheriteCatalog.getExpectedInputOverride(netheriteItem);
+        if (versionSpecific != null) {
+            return versionSpecific;
+        }
+
         switch (netheriteItem) {
             case NETHERITE_HELMET:
                 return Material.DIAMOND_HELMET;
@@ -361,8 +370,6 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
                 return Material.DIAMOND_SHOVEL;
             case NETHERITE_HOE:
                 return Material.DIAMOND_HOE;
-            case NETHERITE_HORSE_ARMOR:
-                return Material.DIAMOND_HORSE_ARMOR;
             default:
                 return null;
         }
@@ -415,11 +422,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         statistics.put("total_purged_items", statsConfig.getInt("total_purged_items", 0));
 
         // Load item-specific statistics
-        for (Material material : Arrays.asList(
-            Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
-            Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
-            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE,
-            Material.NETHERITE_SPEAR, Material.NETHERITE_HORSE_ARMOR)) {
+        for (Material material : statisticsTrackableMaterials()) {
             String key = material.name().toLowerCase() + "_blocked";
             statistics.put(key, statsConfig.getInt(key, 0));
         }
@@ -596,11 +599,7 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         sender.sendMessage("§eItems Purged: §f" + statistics.getOrDefault("total_purged_items", 0));
 
         sender.sendMessage("§7--- Item Breakdown ---");
-        for (Material material : Arrays.asList(
-            Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
-            Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
-            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE,
-            Material.NETHERITE_SPEAR, Material.NETHERITE_HORSE_ARMOR)) {
+        for (Material material : statisticsTrackableMaterials()) {
             String key = material.name().toLowerCase() + "_blocked";
             int count = statistics.getOrDefault(key, 0);
             if (count > 0) {
@@ -753,5 +752,19 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
 
         sender.sendMessage("§aPreset '" + name + "' deleted successfully!");
         return true;
+    }
+
+    private static Material[] combineMaterials(Material[] base, Material[] extra) {
+        Material[] combined = Arrays.copyOf(base, base.length + extra.length);
+        System.arraycopy(extra, 0, combined, base.length, extra.length);
+        return combined;
+    }
+
+    private static Material[] statisticsTrackableMaterials() {
+        return combineMaterials(new Material[] {
+            Material.NETHERITE_HELMET, Material.NETHERITE_CHESTPLATE, Material.NETHERITE_LEGGINGS,
+            Material.NETHERITE_BOOTS, Material.NETHERITE_SWORD, Material.NETHERITE_PICKAXE,
+            Material.NETHERITE_AXE, Material.NETHERITE_SHOVEL, Material.NETHERITE_HOE
+        }, NetheriteCatalog.extraStatisticsMaterials());
     }
 }

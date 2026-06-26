@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (e.g. 1.4.4)
+        description: Release version (e.g. 1.4.5)
         required: true
       changelog:
         description: Changelog (markdown)
@@ -18,13 +18,25 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      matrix:
+        include:
+          - mc_target: '26'
+            java_version: '25'
+            game_version_range: '26.x.x'
+            modrinth_game_versions: |-
+              26.1.x
+          - mc_target: '1.21'
+            java_version: '21'
+            game_version_range: '1.21.x'
+            modrinth_game_versions: |-
+              1.21.x
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set version metadata
         run: |
-          GAME_VERSION_RANGE=26.x.x
           if [ "${{ github.event_name }}" = "release" ]; then
             VERSION="${{ github.event.release.tag_name }}"
             RELEASE_TAG="${{ github.event.release.tag_name }}"
@@ -33,12 +45,15 @@ jobs:
             RELEASE_TAG="v${{ github.event.inputs.version }}"
           fi
           VERSION="${VERSION#v}"
+          GAME_VERSION_RANGE="${{ matrix.game_version_range }}"
           MODRINTH_VERSION="${VERSION}+${GAME_VERSION_RANGE}"
           MODRINTH_NAME="NoNetherite+ [v${VERSION}+${GAME_VERSION_RANGE}]"
+          JAR_FILE="NoNetheritePlus-${VERSION}-${GAME_VERSION_RANGE}.jar"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "MODRINTH_VERSION=$MODRINTH_VERSION" >> "$GITHUB_ENV"
           echo "MODRINTH_NAME=$MODRINTH_NAME" >> "$GITHUB_ENV"
           echo "RELEASE_TAG=$RELEASE_TAG" >> "$GITHUB_ENV"
+          echo "JAR_FILE=$JAR_FILE" >> "$GITHUB_ENV"
 
       - name: Set changelog
         env:
@@ -55,15 +70,15 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_ENV"
 
-      - name: Set up JDK 25
+      - name: Set up JDK ${{ matrix.java_version }}
         uses: actions/setup-java@v4
         with:
-          java-version: '25'
+          java-version: ${{ matrix.java_version }}
           distribution: temurin
           cache: gradle
 
       - name: Build with Gradle
-        run: ./gradlew build --no-daemon -PreleaseVersion="$VERSION"
+        run: ./gradlew build --no-daemon -PreleaseVersion="$VERSION" -PmcTarget="${{ matrix.mc_target }}"
 
       - name: Upload to Modrinth
         uses: cloudnode-pro/modrinth-publish@v2
@@ -77,12 +92,11 @@ jobs:
             paper
             spigot
             bukkit
-          game-versions: |-
-            26.1.x
-          files: build/libs/NoNetheritePlus-${{ env.VERSION }}.jar
+          game-versions: ${{ matrix.modrinth_game_versions }}
+          files: build/libs/${{ env.JAR_FILE }}
 
       - name: Upload jar to GitHub Release
         if: github.event_name == 'release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/NoNetheritePlus-${VERSION}.jar" --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/${JAR_FILE}" --clobber
