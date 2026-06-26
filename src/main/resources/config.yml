@@ -29,6 +29,8 @@ disable_netherite_spear: false
 refund_materials: true
 refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
 disable_upgrade_templates: false
+# When false, netherite armor can still receive smithing-table trims even if crafting that armor is disabled
+disable_netherite_trims: false
 
 # Periodic Netherite Purge
 # Removes all netherite items from online players on a timer

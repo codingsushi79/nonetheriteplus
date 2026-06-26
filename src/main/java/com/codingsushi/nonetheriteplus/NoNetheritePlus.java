@@ -16,7 +16,9 @@ import org.bukkit.event.world.LootGenerateEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.SmithingInventory;
 import org.bukkit.inventory.SmithingRecipe;
+import org.bukkit.inventory.SmithingTransformRecipe;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -191,14 +193,18 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
         while (iterator.hasNext()) {
             Recipe recipe = iterator.next();
 
-            if (recipe instanceof SmithingRecipe smithingRecipe) {
-                ItemStack result = smithingRecipe.getResult();
+            ItemStack result = null;
 
-                // Check if the result is a disabled netherite item
-                if (isDisabledNetheriteItem(result.getType())) {
-                    iterator.remove();
-                    getLogger().info("Removed netherite recipe for: " + result.getType());
-                }
+            if (recipe instanceof SmithingTransformRecipe transformRecipe) {
+                result = transformRecipe.getResult();
+            } else if (recipe instanceof SmithingRecipe smithingRecipe) {
+                result = smithingRecipe.getResult();
+            }
+
+            // Only remove netherite upgrade recipes; trim recipes are handled in PrepareSmithingEvent
+            if (result != null && isDisabledNetheriteItem(result.getType())) {
+                iterator.remove();
+                getLogger().info("Removed netherite upgrade recipe for: " + result.getType());
             }
         }
     }
@@ -239,11 +245,46 @@ public class NoNetheritePlus extends JavaPlugin implements Listener, CommandExec
                material == Material.NETHERITE_HELMET;
     }
 
+    private boolean isNetheriteArmorTrimOperation(PrepareSmithingEvent event) {
+        if (event.getResult() == null || !isNetheriteArmor(event.getResult().getType())) {
+            return false;
+        }
+
+        if (!(event.getInventory() instanceof SmithingInventory smithingInventory)) {
+            return false;
+        }
+
+        ItemStack template = smithingInventory.getInputTemplate();
+        ItemStack base = smithingInventory.getInputEquipment();
+
+        if (template == null || base == null) {
+            return false;
+        }
+
+        if (template.getType() == Material.NETHERITE_UPGRADE_SMITHING_TEMPLATE) {
+            return false;
+        }
+
+        return base.getType() == event.getResult().getType();
+    }
+
     @EventHandler
     public void onPrepareSmithing(PrepareSmithingEvent event) {
         if (event.getResult() != null) {
             Player player = (Player) event.getView().getPlayer();
             Material resultType = event.getResult().getType();
+
+            if (isNetheriteArmorTrimOperation(event)) {
+                if (getWorldConfigValue("disable_netherite_trims", player.getWorld(), false)) {
+                    event.setResult(null);
+
+                    if (debugMode && config.getBoolean("debug.log_craft_events", false)) {
+                        getLogger().info("Blocked netherite trim on " + resultType + " by " + player.getName()
+                                + " in world " + player.getWorld().getName());
+                    }
+                }
+                return;
+            }
 
             if (isDisabledNetheriteItem(resultType, player.getWorld())) {
                 // Track blocked craft attempt

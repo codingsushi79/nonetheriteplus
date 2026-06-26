@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.4.4'
+version = findProperty('releaseVersion') ?: '1.4.5'
 
 java {
     toolchain {
