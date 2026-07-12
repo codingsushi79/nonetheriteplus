@@ -5,42 +5,45 @@ A Minecraft plugin for Paper/Spigot 1.26+ that provides configurable netherite c
 ## Features
 
 - **Configurable Restrictions**: Choose which netherite items to disable (armor, tools, or both)
-- **Material Refund System**: Automatically refunds base materials when crafting is attempted
+- **Material Refund System**: Refunds template, equipment, and ingot into inventory (drops on overflow)
 - **Template Control**: Option to completely disable netherite upgrade templates from spawning
+- **Trim Control**: Optionally block smithing-table trims on netherite armor
+- **Stronger Enforcement** (defaults off): ancient debris, scrap/ingot craft, piglin barter, pickup, join-strip, equip block, optional diamond convert
+- **Bypass Permission**: `nonetherite.bypass` skips all restrictions
+- **Soft Limits**: Cap netherite gear/tools via `limits.yml`
+- **Admin Tools**: inspect, config GUI, audit log
+- **PlaceholderAPI**: soft-depend expansions for version, stats, and disabled flags
 - **Periodic Purge**: Optionally remove all netherite items from online players on a timer
-- **Custom Messages**: Configurable refund notification messages
+- **Custom Messages**: Configurable player-facing messages
 - **Per-Item Control**: Enable/disable each netherite item individually
 - **Automatic Setup**: Creates config folder and file on first startup
 - **Statistics & Analytics**: Track refunds, blocked crafts, template removals, and purged items
 - **World-Specific Configurations**: Different settings per world for complex servers
 - **Configuration Presets**: Save and load different config profiles
 - **Debug Mode**: Enhanced logging for troubleshooting
-- **Performance Optimizations**: Cached configurations and efficient event handling
+- **Dual builds**: Minecraft 26.x and 1.21.x
 
 ## Compatibility
 
-- Minecraft 1.26+
+- Minecraft 26.x (Java 25) or 1.21.x (Java 21)
 - Paper/Spigot servers
-- Requires Java 25
+- Optional: PlaceholderAPI
 
 ## Building
 
 ### Prerequisites
 
-- Java 25
+- Java 25 (26.x target) or Java 21 (1.21.x target)
 - Gradle
 
 ### Build Commands
 
 ```bash
-# Build the plugin JAR
-gradle build
-
-# Or use the gradle wrapper if available
-./gradlew build
+./gradlew build -PmcTarget=26
+./gradlew build -PmcTarget=1.21
 ```
 
-The compiled JAR will be located in `build/libs/NoNetheritePlus-1.4.3.jar`
+The compiled JARs will be located in `build/libs/NoNetheritePlus-1.5.0-26.x.x.jar` and `NoNetheritePlus-1.5.0-1.21.x.jar`.
 
 ## Installation
 
@@ -79,6 +82,30 @@ disable_netherite_spear: false
 refund_materials: true
 refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
 disable_upgrade_templates: false
+disable_netherite_trims: false
+
+messages:
+  blocked_craft: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
+  blocked_pickup: "&cYou cannot pick up this netherite item."
+  stripped_on_join: "&cDisabled netherite items were removed from your inventory."
+  blocked_equip: "&cEquipping this netherite armor is disabled."
+
+enforcement:
+  block_ancient_debris: false
+  block_scrap_and_ingot_craft: false
+  block_piglin_barter: false
+  block_pickup: false
+  strip_disabled_on_join: false
+  block_equip_disabled: false
+  convert_on_strip: false
+
+limits:
+  enabled: false
+  max_netherite_items: 0
+
+audit:
+  enabled: false
+  file: audit.log
 
 # Periodic Netherite Purge
 # Removes all netherite items from online players on a timer
@@ -144,9 +171,47 @@ Tools are allowed by default. Set to `true` to disable crafting for that item.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `refund_materials` | `true` | Refund the base item and netherite ingot when a blocked craft is attempted |
-| `refund_message` | (see config) | Message sent to the player when materials are refunded. Supports `&` color codes |
+| `refund_materials` | `true` | Refund the base item, ingot, and template when a blocked craft is attempted |
+| `refund_message` | (see config) | Legacy refund message (prefer `messages.blocked_craft`) |
 | `disable_upgrade_templates` | `false` | Remove netherite upgrade smithing templates from generated loot |
+| `disable_netherite_trims` | `false` | Block armor trim application on netherite armor |
+
+### Messages
+
+| Option | Description |
+|--------|-------------|
+| `messages.blocked_craft` | Shown when a smithing upgrade is blocked and refunded |
+| `messages.blocked_pickup` | Shown when pickup is blocked |
+| `messages.stripped_on_join` | Shown when disabled items are stripped on join |
+| `messages.blocked_equip` | Shown when equipping disabled armor is blocked |
+
+### Enforcement
+
+All default `false` so existing servers stay unchanged.
+
+| Option | Description |
+|--------|-------------|
+| `enforcement.block_ancient_debris` | Prevent ancient debris drops when mined |
+| `enforcement.block_scrap_and_ingot_craft` | Block scrap smelting and ingot/block crafting |
+| `enforcement.block_piglin_barter` | Strip netherite scrap/ingot/templates from piglin barters |
+| `enforcement.block_pickup` | Cancel picking up restricted netherite items |
+| `enforcement.strip_disabled_on_join` | Remove craft-disabled gear/tools on join |
+| `enforcement.block_equip_disabled` | Cancel equipping craft-disabled netherite armor |
+| `enforcement.convert_on_strip` | Convert stripped gear to diamond equivalents |
+
+### Limits (`limits.yml`)
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `limits.enabled` | `false` | Enable soft possession limits |
+| `limits.max_netherite_items` | `0` | Max gear/tools in inventory (`0` = unlimited) |
+
+### Audit
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `audit.enabled` | `false` | Append blocked actions to an audit file |
+| `audit.file` | `audit.log` | File name under the plugin data folder |
 
 ### Periodic Netherite Purge
 
@@ -224,13 +289,29 @@ After changing the config, restart your server or run `/nonetherite reload` to a
 | `/nonetherite preset load <name>` | `nonetherite.preset` | Load a saved preset |
 | `/nonetherite preset list` | `nonetherite.preset` | List available presets |
 | `/nonetherite preset delete <name>` | `nonetherite.preset` | Delete a preset |
+| `/nonetherite inspect [player]` | `nonetherite.inspect` | Summarize a player's netherite inventory |
+| `/nonetherite gui` | `nonetherite.gui` | Open the config toggle GUI |
+| `/nonetherite audit [lines]` | `nonetherite.audit` | Tail the audit log |
 
 ## Permissions
 
 | Permission | Default | Description |
 |------------|---------|-------------|
 | `nonetherite.info` | all players | Access to `/nonetherite` |
+| `nonetherite.bypass` | false | Skip all netherite restrictions |
 | `nonetherite.reload` | op | Reload configuration |
 | `nonetherite.stats` | op | View statistics |
 | `nonetherite.debug` | op | Toggle debug mode |
 | `nonetherite.preset` | op | Manage configuration presets |
+| `nonetherite.inspect` | op | Inspect player inventories |
+| `nonetherite.gui` | op | Open config GUI |
+| `nonetherite.audit` | op | View audit log |
+| `nonetherite.admin` | op | Parent for admin commands |
+
+## PlaceholderAPI
+
+| Placeholder | Description |
+|-------------|-------------|
+| `%nonetherite_version%` | Plugin version |
+| `%nonetherite_blocked_crafts%` | Total blocked crafts |
+| `%nonetherite_disabled_<item>%` | Whether that item is craft-disabled (`helmet`, `netherite_sword`, etc.) |

@@ -1,153 +1,133 @@
 # NoNetheritePlus
 
-A Minecraft plugin for Paper/Spigot 1.26+ that provides configurable netherite crafting restrictions with material refund system.
+A Minecraft plugin for Paper/Spigot that provides configurable netherite restrictions, enforcement, refunds, and admin tooling.
 
 ## Features
 
-- **Configurable Restrictions**: Choose which netherite items to disable (armor, tools, or both)
-- **Material Refund System**: Automatically refunds base materials when crafting is attempted
-- **Template Control**: Option to completely disable netherite upgrade templates from spawning
-- **Custom Messages**: Configurable refund notification messages
-- **Per-Item Control**: Enable/disable each netherite item individually
-- **Automatic Setup**: Creates config folder and file on first startup
-- **Statistics & Analytics**: Track refunds, blocked crafts, and template removals
-- **World-Specific Configurations**: Different settings per world for complex servers
-- **Configuration Presets**: Save and load different config profiles
-- **Debug Mode**: Enhanced logging for troubleshooting
-- **Performance Optimizations**: Cached configurations and efficient event handling
+- **Configurable Restrictions**: Disable netherite armor/tools per item
+- **Material Refunds**: Returns template, equipment, and ingot to inventory (drops on overflow)
+- **Template & Trim Control**: Block upgrade templates in loot; optionally block armor trims
+- **Stronger Enforcement** (defaults off): ancient debris, scrap/ingot craft, piglin barter, pickup, join-strip, equip block
+- **Bypass Permission**: `nonetherite.bypass` skips all restrictions
+- **Soft Limits**: Cap how many netherite gear/tools a player may hold (`limits.yml`)
+- **Admin Tools**: inspect, config GUI, audit log, presets, stats, debug
+- **PlaceholderAPI** (soft-depend): `%nonetherite_version%`, `%nonetherite_blocked_crafts%`, `%nonetherite_disabled_<item>%`
+- **World-Specific Configurations** and **configuration presets**
+- **Dual builds**: Minecraft 26.x (Java 25) and 1.21.x (Java 21)
 
 ## Building
 
 ### Prerequisites
 
-- Java 25
-- Gradle
+- Java 25 (for `mcTarget=26`) or Java 21 (for `mcTarget=1.21`)
+- Gradle wrapper included
 
 ### Build Commands
 
 ```bash
-# Build the plugin JAR
-gradle build
+# Minecraft 26.x
+./gradlew build -PmcTarget=26
 
-# Or use the gradle wrapper if available
-./gradlew build
+# Minecraft 1.21.x
+./gradlew build -PmcTarget=1.21
 ```
 
-The compiled JAR will be located in `build/libs/NoNetheritePlus-1.4.3.jar`
+JARs land in `build/libs/` as `NoNetheritePlus-1.5.0-26.x.x.jar` / `NoNetheritePlus-1.5.0-1.21.x.jar`.
 
 ## Installation
 
-1. Copy the JAR file to your server's `plugins/` directory
+1. Copy the matching JAR into `plugins/`
 2. Restart the server
-3. The plugin will automatically create a `NoNetheritePlus` folder with `config.yml`
+3. Edit `plugins/NoNetheritePlus/config.yml` (and optionally `limits.yml`)
+4. Run `/nonetherite reload`
 
-## Configuration
+## Configuration highlights
 
-The plugin creates a `config.yml` file in `plugins/NoNetheritePlus/` on first startup. Edit this file to customize behavior:
+### Enforcement (all default `false`)
 
-### Netherite Armor Settings
 ```yaml
-# Set to true to disable crafting, false to allow normal crafting
-disable_netherite_helmet: true      # Default: true
-disable_netherite_chestplate: true  # Default: true
-disable_netherite_leggings: true    # Default: true
-disable_netherite_boots: true       # Default: true
+enforcement:
+  block_ancient_debris: false
+  block_scrap_and_ingot_craft: false
+  block_piglin_barter: false
+  block_pickup: false
+  strip_disabled_on_join: false
+  block_equip_disabled: false
+  convert_on_strip: false   # convert stripped gear to diamond instead of deleting
 ```
 
-### Netherite Tool Settings
+### Messages
+
 ```yaml
-# Tools are enabled by default, set to true to disable
-disable_netherite_sword: false      # Default: false
-disable_netherite_pickaxe: false    # Default: false
-disable_netherite_axe: false        # Default: false
-disable_netherite_shovel: false     # Default: false
-disable_netherite_hoe: false        # Default: false
+messages:
+  blocked_craft: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
+  blocked_pickup: "&cYou cannot pick up this netherite item."
+  stripped_on_join: "&cDisabled netherite items were removed from your inventory."
+  blocked_equip: "&cEquipping this netherite armor is disabled."
 ```
 
-### General Settings
+### Limits (`limits.yml`)
+
 ```yaml
-refund_materials: true  # Whether to refund materials when crafting is disabled
-refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
-disable_upgrade_templates: false  # Whether to prevent netherite upgrade templates from spawning in loot
+limits:
+  enabled: false
+  max_netherite_items: 0   # 0 = unlimited
 ```
 
-### Statistics & Analytics
-```yaml
-statistics:
-  enabled: true        # Enable/disable statistics tracking
-  track_refunds: true  # Track material refunds
-  track_blocked_crafts: true  # Track blocked crafting attempts
-  track_template_removals: true  # Track removed templates
-  reset_on_reload: false  # Reset stats when config reloads
-  log_to_file: false   # Save stats to file immediately
-```
+### Audit
 
-### Debug Mode
 ```yaml
-debug:
-  enabled: false       # Enable debug logging
-  log_loot_events: false  # Log template removals
-  log_craft_events: false # Log blocked crafts
-  log_config_changes: true # Log config updates
-  verbose_messages: false  # Extra detailed messages
+audit:
+  enabled: false
+  file: audit.log
 ```
-
-### World-Specific Configurations
-```yaml
-worlds:
-  world:              # World name
-    disable_netherite_helmet: true
-    disable_upgrade_templates: false
-    refund_materials: true
-  world_nether:       # Different settings per world
-    disable_upgrade_templates: true
-    disable_all_netherite: true
-  world_end:          # Add other worlds as needed
-    disable_upgrade_templates: true
-# Settings fall back to global config for unspecified worlds
-```
-
-### Configuration Reload
-After changing the config, restart your server or use a plugin manager to reload the plugin.
 
 ## Commands
 
-- `/nonetherite` - Shows plugin version and information
-- `/nonetherite reload` - Reloads configuration (requires `nonetherite.reload` permission)
-- `/nonetherite stats` - Shows plugin statistics (requires `nonetherite.stats` permission)
-- `/nonetherite debug <on|off>` - Toggle debug mode (requires `nonetherite.debug` permission)
-- `/nonetherite preset save <name>` - Save current config as preset (requires `nonetherite.preset` permission)
-- `/nonetherite preset load <name>` - Load a saved preset (requires `nonetherite.preset` permission)
-- `/nonetherite preset list` - List available presets (requires `nonetherite.preset` permission)
-- `/nonetherite preset delete <name>` - Delete a preset (requires `nonetherite.preset` permission)
+| Command | Permission | Description |
+|---------|------------|-------------|
+| `/nonetherite` | `nonetherite.info` | Plugin info |
+| `/nonetherite reload` | `nonetherite.reload` | Reload config |
+| `/nonetherite stats` | `nonetherite.stats` | View statistics |
+| `/nonetherite debug <on\|off>` | `nonetherite.debug` | Toggle debug |
+| `/nonetherite preset ...` | `nonetherite.preset` | Save/load/list/delete presets |
+| `/nonetherite inspect [player]` | `nonetherite.inspect` | Inventory netherite summary |
+| `/nonetherite gui` | `nonetherite.gui` | Chest config toggles |
+| `/nonetherite audit [lines]` | `nonetherite.audit` | Tail audit log |
 
 ## Permissions
 
-- `nonetherite.info` - Access to basic plugin information (default: true)
-- `nonetherite.reload` - Reload plugin configuration (default: op)
-- `nonetherite.stats` - View statistics (default: op)
-- `nonetherite.debug` - Toggle debug mode (default: op)
-- `nonetherite.preset` - Manage configuration presets (default: op)
+- `nonetherite.bypass` — skip all restrictions (default: false)
+- `nonetherite.admin` — parent for reload/stats/debug/preset/inspect/gui/audit (default: op)
+- Leaf perms: `info`, `reload`, `stats`, `debug`, `preset`, `inspect`, `gui`, `audit`
+
+## PlaceholderAPI
+
+| Placeholder | Value |
+|-------------|-------|
+| `%nonetherite_version%` | Plugin version |
+| `%nonetherite_blocked_crafts%` | Total blocked crafts |
+| `%nonetherite_disabled_helmet%` | `true`/`false` (also `disabled_netherite_helmet`, etc.) |
 
 ## Compatibility
 
-- Minecraft 1.26+
-- Paper/Spigot servers
-- Requires Java 25
+- Minecraft **26.x** (Paper/Spigot, Java 25) or **1.21.x** (Java 21)
+- Optional: PlaceholderAPI
 
 ## Releasing
 
-Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds the JAR, uploads it to [Modrinth](https://modrinth.com/plugin/nonetherite+), and attaches it to the GitHub release.
+Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds both JARs, uploads them to [Modrinth](https://modrinth.com/plugin/nonetherite+), attaches them to the GitHub release, and posts an `@everyone` announcement in Discord.
 
 ### One-time setup
 
 1. Create a Modrinth PAT at [modrinth.com/settings/pats](https://modrinth.com/settings/pats) with the **Create versions** scope.
-2. In your GitHub repo, go to **Settings → Secrets and variables → Actions** and add:
-   - `MODRINTH_TOKEN` — your Modrinth PAT
+2. Create a Discord channel webhook (no bot required).
+3. Add GitHub Actions secrets: `MODRINTH_TOKEN`, `DISCORD_WEBHOOK_URL`.
 
 ### Publish a new version
 
-1. Bump the default version in `build.gradle` (or rely on the release tag — the workflow passes `-PreleaseVersion` from the tag).
-2. Create a GitHub release with a tag like `v1.4.3` (the `v` prefix is optional).
-3. Write release notes — these become the Modrinth changelog.
-4. Publish the release. The **Release** workflow handles the rest.
+1. Bump `build.gradle` version (or rely on the release tag).
+2. Create a GitHub release tagged like `v1.5.0`.
+3. Publish — the Release workflow handles the rest.
+
+### Join the [Discord!](https://discord.gg/2QU5WzN8hc)

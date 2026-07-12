@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.4.5'
+version = findProperty('releaseVersion') ?: '1.5.0'
 
 def mcTarget = findProperty('mcTarget') ?: '26'
 
@@ -53,10 +53,15 @@ repositories {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
+    maven {
+        name = 'placeholderapi'
+        url = 'https://repo.extendedclip.com/content/repositories/placeholderapi/'
+    }
 }
 
 dependencies {
     compileOnly activeTarget.paperApi
+    compileOnly 'me.clip:placeholderapi:2.11.6'
 }
 
 jar {

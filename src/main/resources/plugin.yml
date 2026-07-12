@@ -14,15 +14,20 @@ description: Configurable netherite crafting restrictions with material refund s
 authors:
   - SushiMC, SquareDealSam
 website: https://github.com/codingsushi79/nonetheriteplus
+softdepend:
+  - PlaceholderAPI
 commands:
   nonetherite:
     description: Shows NoNetheritePlus plugin information
-    usage: /nonetherite [reload|stats|debug|preset] # Various subcommands available
+    usage: /nonetherite [reload|stats|debug|preset|inspect|gui|audit]
     permission: nonetherite.info
 permissions:
   nonetherite.info:
     description: Allows access to the /nonetherite command
     default: true
+  nonetherite.bypass:
+    description: Bypass all netherite restrictions
+    default: false
   nonetherite.reload:
     description: Allows reloading the plugin configuration
     default: op
@@ -35,3 +40,23 @@ permissions:
   nonetherite.preset:
     description: Allows managing configuration presets
     default: op
+  nonetherite.inspect:
+    description: Allows inspecting player netherite inventories
+    default: op
+  nonetherite.gui:
+    description: Allows opening the config GUI
+    default: op
+  nonetherite.audit:
+    description: Allows viewing the audit log
+    default: op
+  nonetherite.admin:
+    description: Parent permission for admin commands
+    default: op
+    children:
+      nonetherite.reload: true
+      nonetherite.stats: true
+      nonetherite.debug: true
+      nonetherite.preset: true
+      nonetherite.inspect: true
+      nonetherite.gui: true
+      nonetherite.audit: true

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (e.g. 1.4.5)
+        description: Release version (e.g. 1.5.0)
         required: true
       changelog:
         description: Changelog (markdown)
@@ -100,3 +100,54 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/${JAR_FILE}" --clobber
+
+  notify-discord:
+    name: Discord notification
+    needs: release
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+      - name: Set version metadata
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            GITHUB_RELEASE_URL="${{ github.event.release.html_url }}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+            GITHUB_RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${VERSION#v}"
+          fi
+          VERSION="${VERSION#v}"
+          MODRINTH_26_SLUG="${VERSION}%2B26.x.x"
+          MODRINTH_121_SLUG="${VERSION}%2B1.21.x"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "GITHUB_RELEASE_URL=$GITHUB_RELEASE_URL" >> "$GITHUB_ENV"
+          echo "MODRINTH_26_URL=https://modrinth.com/plugin/nonetherite+/version/${MODRINTH_26_SLUG}" >> "$GITHUB_ENV"
+          echo "MODRINTH_121_URL=https://modrinth.com/plugin/nonetherite+/version/${MODRINTH_121_SLUG}" >> "$GITHUB_ENV"
+
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL secret is not set; skipping Discord notification."
+            exit 0
+          fi
+
+          CONTENT=$(printf '%s\n' \
+            "@everyone" \
+            "" \
+            "**NoNetherite+ v${VERSION}** is out!" \
+            "" \
+            "GitHub release: ${GITHUB_RELEASE_URL}" \
+            "Modrinth (26.x): ${MODRINTH_26_URL}" \
+            "Modrinth (1.21.x): ${MODRINTH_121_URL}")
+
+          jq -n \
+            --arg content "$CONTENT" \
+            '{
+              content: $content,
+              allowed_mentions: { parse: ["everyone"] }
+            }' | curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d @- \
+            "$DISCORD_WEBHOOK_URL"
