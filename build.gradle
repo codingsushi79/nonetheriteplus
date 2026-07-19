@@ -1,24 +1,27 @@
 plugins {
     id 'java'
+    id 'fabric-loom' version '1.17.16'
 }
 
 group = 'com.codingsushi'
 version = findProperty('releaseVersion') ?: '1.4.5'
 
-def mcTarget = findProperty('mcTarget') ?: '26'
+def mcTarget = findProperty('mcTarget') ?: '1.21'
 
 def targetConfigs = [
     '26': [
-        paperApi       : 'io.papermc.paper:paper-api:26.1.2.build.69-stable',
-        javaVersion    : 25,
-        apiVersion     : '1.26',
-        gameVersionTag : '26.x.x',
+        minecraftVersion: '26.1.2',
+        loaderVersion   : '0.19.3',
+        fabricApiVersion: '0.155.2+26.1.2',
+        javaVersion     : 25,
+        gameVersionTag  : '26.x.x',
     ],
     '1.21': [
-        paperApi       : 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT',
-        javaVersion    : 21,
-        apiVersion     : '1.21',
-        gameVersionTag : '1.21.x',
+        minecraftVersion: '1.21.4',
+        loaderVersion   : '0.19.3',
+        fabricApiVersion: '0.119.4+1.21.4',
+        javaVersion     : 21,
+        gameVersionTag  : '1.21.x',
     ],
 ]
 
@@ -46,28 +49,36 @@ sourceSets {
 repositories {
     mavenCentral()
     maven {
-        name = 'papermc-repo'
-        url = 'https://repo.papermc.io/repository/maven-public/'
-    }
-    maven {
-        name = 'sonatype'
-        url = 'https://oss.sonatype.org/content/groups/public/'
+        name = 'FabricMC'
+        url = 'https://maven.fabricmc.net/'
     }
 }
 
 dependencies {
-    compileOnly activeTarget.paperApi
+    minecraft "com.mojang:minecraft:${activeTarget.minecraftVersion}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${activeTarget.loaderVersion}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${activeTarget.fabricApiVersion}"
+    implementation 'org.yaml:snakeyaml:2.3'
+    include 'org.yaml:snakeyaml:2.3'
 }
 
-jar {
-    archiveFileName = "NoNetheritePlus-${version}-${activeTarget.gameVersionTag}.jar"
+loom {
+    serverOnlyMinecraftJar()
 }
 
 processResources {
-    filesMatching('plugin.yml') {
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
-            VERSION     : version.toString(),
-            API_VERSION : activeTarget.apiVersion,
-        ])
+    inputs.property 'version', version
+    inputs.property 'gameVersionTag', activeTarget.gameVersionTag
+    filesMatching('fabric.mod.json') {
+        expand version: version, gameVersionTag: activeTarget.gameVersionTag
     }
+}
+
+jar {
+    archiveFileName = "NoNetheritePlus-${version}-fabric-${activeTarget.gameVersionTag}.jar"
+}
+
+remapJar {
+    archiveFileName = "NoNetheritePlus-${version}-fabric-${activeTarget.gameVersionTag}.jar"
 }

@@ -1,1 +1,12 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'FabricMC'
+            url = 'https://maven.fabricmc.net/'
+        }
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 rootProject.name = 'nonetheriteplus'

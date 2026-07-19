@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "nonetheriteplus",
+  "version": "${version}",
+  "name": "NoNetheritePlus",
+  "description": "Configurable netherite crafting restrictions with material refund system and template control",
+  "authors": ["SushiMC", "SquareDealSam"],
+  "contact": {
+    "homepage": "https://github.com/codingsushi79/nonetheriteplus"
+  },
+  "license": "MIT",
+  "environment": "server",
+  "entrypoints": {
+    "main": ["com.codingsushi.nonetheriteplus.fabric.NoNetheritePlusFabric"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "fabric-api": "*",
+    "minecraft": "*",
+    "java": ">=21"
+  }
+}

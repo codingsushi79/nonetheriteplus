@@ -92,6 +92,8 @@ jobs:
             paper
             spigot
             bukkit
+            purpur
+            folia
           game-versions: ${{ matrix.modrinth_game_versions }}
           files: build/libs/${{ env.JAR_FILE }}
 
