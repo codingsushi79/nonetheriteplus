@@ -2,10 +2,10 @@
 
 Have you ever wanted to disable netherite armor on your server but all the plugins aren't really what you are looking for? Well look no more! NoNetherite+ allows you to configure what parts to disable!
 
-**Compatibility:** Minecraft 26.x (Java 25) or 1.21.x (Java 21) on Paper/Spigot. Optional soft-depend: PlaceholderAPI.
+**Compatibility:** Minecraft 26.x (Java 25) or 1.21.x (Java 21) on Paper/Spigot/Bukkit/Purpur/Folia. Also available for Fabric, Quilt, Forge, and NeoForge on 1.21.x (see below) — 26.x builds for those four aren't out yet; Mojang hasn't published mappings for 26.x, which the mod-loader toolchains need. Optional soft-depend on Paper: PlaceholderAPI.
 
 <details>
-<summary>Paper Configuration</summary>
+<summary>Paper/Spigot/Bukkit/Purpur/Folia Configuration</summary>
 
 The plugin creates `plugins/NoNetheritePlus/config.yml` (and `limits.yml`) on first startup. After editing, run `/nonetherite reload` to apply changes.
 
@@ -234,7 +234,9 @@ Presets are saved and loaded via commands (see below). The `presets:` section in
 </details>
 
 <details>
-<summary>Commands & Permissions</summary>
+<summary>Commands & Permissions (Paper/Spigot/Bukkit/Purpur/Folia)</summary>
+
+On Fabric/Quilt/Forge/NeoForge, `/nonetherite`, `reload`, `stats`, `debug`, and `preset` work the same way, but `inspect`/`gui`/`audit` aren't available (not ported yet, see the loader-specific sections above), and there's no Bukkit-style permission node system — the admin subcommands just require operator (permission level 2) instead of the `nonetherite.*` nodes below.
 
 ### Commands
 
@@ -283,9 +285,9 @@ Optional soft-depend. Placeholders:
 </details>
 
 <details>
-<summary>Paper Installation</summary>
+<summary>Paper/Spigot/Bukkit/Purpur/Folia Installation</summary>
 
-1. Place the matching `.jar` (26.x or 1.21.x) into your `plugins/` folder.
+1. Place the matching `.jar` (26.x or 1.21.x) into your `plugins/` folder. Purpur and Folia both run the same jar as Paper.
 2. Start the server.
 3. When the server starts, a `NoNetheritePlus` folder will be created with `config.yml` and `limits.yml` inside. (See above for config.)
 4. After making changes to the config file, run:
@@ -295,6 +297,46 @@ Optional soft-depend. Placeholders:
 ```
 
 to apply changes.
+
+</details>
+
+<details>
+<summary>Fabric / Quilt</summary>
+
+**1.21.x only for now** (see the compatibility note above for why 26.x isn't available yet).
+
+Quilt runs the same jar as Fabric: Quilt Loader supports Fabric mods directly through Quilted Fabric API (QFAPI), and this mod only uses standard `fabric-api`, so there's no separate Quilt build. Install [Fabric API](https://modrinth.com/mod/fabric-api) (or QFAPI on Quilt) alongside it.
+
+1. Install Fabric Loader (or Quilt Loader) for Minecraft 1.21.4.
+2. Place the `fabric-1.21.x` jar and Fabric API/QFAPI into your `mods/` folder.
+3. Start the server. A `config/nonetheriteplus/config.yml` file is created on first boot.
+4. Run `/nonetherite reload` after editing the config to apply changes.
+
+**Feature set on this build** is currently smaller than the Paper version: per-item `disable_netherite_*` toggles, `disable_upgrade_templates`, `periodic_purge`, world overrides (`worlds.*`), config presets, and a basic `statistics`/`debug` block are all supported. Not yet ported: `messages.*`, `enforcement.*`, `limits.*`, `audit.*`, `refund_materials`/`refund_message` (crafting is blocked by removing the recipe entirely, so there's nothing to refund), `disable_netherite_trims`, the GUI/inspect/audit commands, and PlaceholderAPI. Recipe blocking works by generating a datapack and reloading server resources rather than a live smithing-table hook, so toggling an item is instant via `/nonetherite reload`, same as Paper.
+
+</details>
+
+<details>
+<summary>Forge</summary>
+
+**1.21.x only for now.** Same feature set and config-file behavior as the Fabric/Quilt build above (see that section for the supported vs. not-yet-ported list).
+
+1. Install Forge for Minecraft 1.21.4.
+2. Place the `forge-1.21.x` jar into your `mods/` folder.
+3. Start the server. A `config/nonetheriteplus/config.yml` file is created on first boot.
+4. Run `/nonetherite reload` after editing the config to apply changes.
+
+</details>
+
+<details>
+<summary>NeoForge</summary>
+
+**1.21.x only for now.** Same feature set and config-file behavior as the Fabric/Quilt build above.
+
+1. Install NeoForge for Minecraft 1.21.4.
+2. Place the `neoforge-1.21.x` jar into your `mods/` folder.
+3. Start the server. A `config/nonetheriteplus/config.yml` file is created on first boot.
+4. Run `/nonetherite reload` after editing the config to apply changes.
 
 </details>
 
