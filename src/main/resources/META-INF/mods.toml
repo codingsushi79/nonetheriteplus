@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="MIT"
+issueTrackerURL="https://github.com/codingsushi79/nonetheriteplus/issues"
+
+[[mods]]
+modId="nonetheriteplus"
+version="${version}"
+displayName="NoNetheritePlus"
+authors="SushiMC, SquareDealSam"
+description='''Configurable netherite crafting restrictions with material refund system and template control'''
+
+[[dependencies.nonetheriteplus]]
+    modId="forge"
+    type="required"
+    versionRange="[1,)"
+    ordering="NONE"
+    side="SERVER"
+
+[[dependencies.nonetheriteplus]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21,)"
+    ordering="NONE"
+    side="BOTH"
