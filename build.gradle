@@ -1,24 +1,24 @@
 plugins {
     id 'java'
+    id 'net.neoforged.moddev' version '2.0.142'
+    id 'com.gradleup.shadow' version '9.6.0'
 }
 
 group = 'com.codingsushi'
 version = findProperty('releaseVersion') ?: '1.4.5'
 
-def mcTarget = findProperty('mcTarget') ?: '26'
+def mcTarget = findProperty('mcTarget') ?: '1.21'
 
 def targetConfigs = [
     '26': [
-        paperApi       : 'io.papermc.paper:paper-api:26.1.2.build.69-stable',
-        javaVersion    : 25,
-        apiVersion     : '1.26',
-        gameVersionTag : '26.x.x',
+        neoforgeVersion : '26.1.0.25-beta',
+        javaVersion     : 25,
+        gameVersionTag  : '26.x.x',
     ],
     '1.21': [
-        paperApi       : 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT',
-        javaVersion    : 21,
-        apiVersion     : '1.21',
-        gameVersionTag : '1.21.x',
+        neoforgeVersion : '21.4.157',
+        javaVersion     : 21,
+        gameVersionTag  : '1.21.x',
     ],
 ]
 
@@ -43,31 +43,36 @@ sourceSets {
     }
 }
 
+neoForge {
+    version = activeTarget.neoforgeVersion
+}
+
+configurations {
+    shade
+    implementation.extendsFrom(shade)
+}
+
 repositories {
     mavenCentral()
-    maven {
-        name = 'papermc-repo'
-        url = 'https://repo.papermc.io/repository/maven-public/'
-    }
-    maven {
-        name = 'sonatype'
-        url = 'https://oss.sonatype.org/content/groups/public/'
-    }
 }
 
 dependencies {
-    compileOnly activeTarget.paperApi
-}
-
-jar {
-    archiveFileName = "NoNetheritePlus-${version}-${activeTarget.gameVersionTag}.jar"
+    shade 'org.yaml:snakeyaml:2.3'
 }
 
 processResources {
-    filesMatching('plugin.yml') {
-        filter(org.apache.tools.ant.filters.ReplaceTokens, tokens: [
-            VERSION     : version.toString(),
-            API_VERSION : activeTarget.apiVersion,
-        ])
+    inputs.property 'version', version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand version: version
     }
+}
+
+shadowJar {
+    archiveFileName = "NoNetheritePlus-${version}-neoforge-${activeTarget.gameVersionTag}.jar"
+    archiveClassifier = ''
+    configurations = [project.configurations.shade]
+}
+
+tasks.named('assemble') {
+    dependsOn 'shadowJar'
 }
