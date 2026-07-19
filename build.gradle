@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.4.5'
+version = findProperty('releaseVersion') ?: '1.6.0'
 
 def mcTarget = findProperty('mcTarget') ?: '1.21'
 
