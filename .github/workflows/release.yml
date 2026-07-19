@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (e.g. 1.5.0)
+        description: Release version (e.g. 1.6.0)
         required: true
       changelog:
         description: Changelog (markdown)
@@ -156,7 +156,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/${JAR_FILE}" --clobber
 
-<<<<<<< HEAD
   notify-discord:
     name: Discord notification
     needs: release
@@ -173,12 +172,13 @@ jobs:
             GITHUB_RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/v${VERSION#v}"
           fi
           VERSION="${VERSION#v}"
-          MODRINTH_26_SLUG="${VERSION}%2B26.x.x"
-          MODRINTH_121_SLUG="${VERSION}%2B1.21.x"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "GITHUB_RELEASE_URL=$GITHUB_RELEASE_URL" >> "$GITHUB_ENV"
-          echo "MODRINTH_26_URL=https://modrinth.com/plugin/nonetherite+/version/${MODRINTH_26_SLUG}" >> "$GITHUB_ENV"
-          echo "MODRINTH_121_URL=https://modrinth.com/plugin/nonetherite+/version/${MODRINTH_121_SLUG}" >> "$GITHUB_ENV"
+          echo "MODRINTH_26_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2B26.x.x" >> "$GITHUB_ENV"
+          echo "MODRINTH_121_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2B1.21.x" >> "$GITHUB_ENV"
+          echo "MODRINTH_FABRIC_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2Bfabric-1.21.x" >> "$GITHUB_ENV"
+          echo "MODRINTH_FORGE_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2Bforge-1.21.x" >> "$GITHUB_ENV"
+          echo "MODRINTH_NEOFORGE_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2Bneoforge-1.21.x" >> "$GITHUB_ENV"
 
       - name: Notify Discord
         env:
@@ -195,8 +195,11 @@ jobs:
             "**NoNetherite+ v${VERSION}** is out!" \
             "" \
             "GitHub release: ${GITHUB_RELEASE_URL}" \
-            "Modrinth (26.x): ${MODRINTH_26_URL}" \
-            "Modrinth (1.21.x): ${MODRINTH_121_URL}")
+            "Modrinth (paper/spigot/bukkit/purpur/folia, 26.x): ${MODRINTH_26_URL}" \
+            "Modrinth (paper/spigot/bukkit/purpur/folia, 1.21.x): ${MODRINTH_121_URL}" \
+            "Modrinth (fabric/quilt): ${MODRINTH_FABRIC_URL}" \
+            "Modrinth (forge): ${MODRINTH_FORGE_URL}" \
+            "Modrinth (neoforge): ${MODRINTH_NEOFORGE_URL}")
 
           jq -n \
             --arg content "$CONTENT" \
@@ -207,39 +210,3 @@ jobs:
             -H "Content-Type: application/json" \
             -d @- \
             "$DISCORD_WEBHOOK_URL"
-=======
-  notify:
-    name: Discord notification
-    needs: release
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send single Discord notification for the whole run
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          STATUS: ${{ needs.release.result }}
-          VERSION: ${{ github.event.release.tag_name || github.event.inputs.version }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-            echo "DISCORD_WEBHOOK_URL secret not set, skipping Discord notification."
-            exit 0
-          fi
-
-          if [ "$STATUS" = "success" ]; then
-            TITLE="NoNetheritePlus $VERSION released"
-            COLOR=3066993
-          else
-            TITLE="NoNetheritePlus $VERSION release build failed"
-            COLOR=15158332
-          fi
-
-          PAYLOAD=$(jq -n \
-            --arg title "$TITLE" \
-            --arg desc "All loader builds (paper/spigot/bukkit/purpur/folia, fabric/quilt, forge, neoforge): **$STATUS**" \
-            --arg url "$RUN_URL" \
-            --argjson color "$COLOR" \
-            '{embeds: [{title: $title, description: $desc, url: $url, color: $color}]}')
-
-          curl -sf -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
->>>>>>> 9f785e7 (Rewrite release workflow into a single 5-leg parallel matrix covering Paper/Spigot/Bukkit/Purpur/Folia (26.x + 1.21.x), Fabric+Quilt, Forge, and NeoForge, with one Discord notification for the whole run.)

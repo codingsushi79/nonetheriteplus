@@ -32,7 +32,7 @@ A Minecraft plugin for Paper/Spigot that provides configurable netherite restric
 ./gradlew build -PmcTarget=1.21
 ```
 
-JARs land in `build/libs/` as `NoNetheritePlus-1.5.0-26.x.x.jar` / `NoNetheritePlus-1.5.0-1.21.x.jar`.
+JARs land in `build/libs/` as `NoNetheritePlus-1.6.0-26.x.x.jar` / `NoNetheritePlus-1.6.0-1.21.x.jar`.
 
 ## Installation
 
@@ -127,7 +127,7 @@ Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds 
 ### Publish a new version
 
 1. Bump `build.gradle` version (or rely on the release tag).
-2. Create a GitHub release tagged like `v1.5.0`.
+2. Create a GitHub release tagged like `v1.6.0`.
 3. Publish — the Release workflow handles the rest.
 
 ### Join the [Discord!](https://discord.gg/2QU5WzN8hc)

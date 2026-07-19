@@ -43,7 +43,7 @@ A Minecraft plugin for Paper/Spigot 1.26+ that provides configurable netherite c
 ./gradlew build -PmcTarget=1.21
 ```
 
-The compiled JARs will be located in `build/libs/NoNetheritePlus-1.5.0-26.x.x.jar` and `NoNetheritePlus-1.5.0-1.21.x.jar`.
+The compiled JARs will be located in `build/libs/NoNetheritePlus-1.6.0-26.x.x.jar` and `NoNetheritePlus-1.6.0-1.21.x.jar`.
 
 ## Installation
 
