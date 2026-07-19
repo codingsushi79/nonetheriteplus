@@ -1,0 +1,62 @@
+##########################################
+#  ____            _     _ __  __  ____  #
+# / ___| _   _ ___| |__ (_)  \/  |/ ___| #
+# \___ \| | | / __| '_ \| | |\/| | |     #
+#  ___) | |_| \__ \ | | | | |  | | |___  #
+# |____/ \__,_|___/_| |_|_|_|  |_|\____| #
+##########################################
+
+name: NoNetheritePlus
+version: '@VERSION@'
+main: com.codingsushi.nonetheriteplus.NoNetheritePlus
+api-version: '@API_VERSION@'
+description: Configurable netherite crafting restrictions with material refund system and template control
+authors:
+  - SushiMC, SquareDealSam
+website: https://github.com/codingsushi79/nonetheriteplus
+softdepend:
+  - PlaceholderAPI
+commands:
+  nonetherite:
+    description: Shows NoNetheritePlus plugin information
+    usage: /nonetherite [reload|stats|debug|preset|inspect|gui|audit]
+    permission: nonetherite.info
+permissions:
+  nonetherite.info:
+    description: Allows access to the /nonetherite command
+    default: true
+  nonetherite.bypass:
+    description: Bypass all netherite restrictions
+    default: false
+  nonetherite.reload:
+    description: Allows reloading the plugin configuration
+    default: op
+  nonetherite.stats:
+    description: Allows viewing plugin statistics
+    default: op
+  nonetherite.debug:
+    description: Allows toggling debug mode
+    default: op
+  nonetherite.preset:
+    description: Allows managing configuration presets
+    default: op
+  nonetherite.inspect:
+    description: Allows inspecting player netherite inventories
+    default: op
+  nonetherite.gui:
+    description: Allows opening the config GUI
+    default: op
+  nonetherite.audit:
+    description: Allows viewing the audit log
+    default: op
+  nonetherite.admin:
+    description: Parent permission for admin commands
+    default: op
+    children:
+      nonetherite.reload: true
+      nonetherite.stats: true
+      nonetherite.debug: true
+      nonetherite.preset: true
+      nonetherite.inspect: true
+      nonetherite.gui: true
+      nonetherite.audit: true

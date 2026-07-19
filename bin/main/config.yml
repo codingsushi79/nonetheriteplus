@@ -1,0 +1,94 @@
+##########################################
+#  ____            _     _ __  __  ____  #
+# / ___| _   _ ___| |__ (_)  \/  |/ ___| #
+# \___ \| | | / __| '_ \| | |\/| | |     #
+#  ___) | |_| \__ \ | | | | |  | | |___  #
+# |____/ \__,_|___/_| |_|_|_|  |_|\____| #
+##########################################
+
+# NoNetheritePlus Configuration
+# Set to true to disable crafting of netherite items and enable refund system
+# Set to false to allow normal crafting
+
+# Netherite Armor
+disable_netherite_helmet: true
+disable_netherite_chestplate: true
+disable_netherite_leggings: true
+disable_netherite_boots: true
+disable_netherite_horse_armor: true
+
+# Netherite Tools
+disable_netherite_sword: false
+disable_netherite_pickaxe: false
+disable_netherite_axe: false
+disable_netherite_shovel: false
+disable_netherite_hoe: false
+disable_netherite_spear: false
+
+# General Settings
+refund_materials: true
+refund_message: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
+disable_upgrade_templates: false
+# When false, netherite armor can still receive smithing-table trims even if crafting that armor is disabled
+disable_netherite_trims: false
+
+# Player-facing messages
+messages:
+  blocked_craft: "&cNetherite crafting is disabled for this item. Your materials have been refunded."
+  blocked_pickup: "&cYou cannot pick up this netherite item."
+  stripped_on_join: "&cDisabled netherite items were removed from your inventory."
+  blocked_equip: "&cEquipping this netherite armor is disabled."
+
+# Stronger enforcement (all default off — existing servers stay unchanged)
+enforcement:
+  block_ancient_debris: false
+  block_scrap_and_ingot_craft: false
+  block_piglin_barter: false
+  block_pickup: false
+  strip_disabled_on_join: false
+  block_equip_disabled: false
+  convert_on_strip: false
+
+# Soft possession limit (also mirrored in limits.yml)
+limits:
+  enabled: false
+  max_netherite_items: 0
+
+# Audit log of blocked actions
+audit:
+  enabled: false
+  file: audit.log
+
+# Periodic Netherite Purge
+# Removes all netherite items from online players on a timer
+periodic_purge:
+  enabled: false
+  interval_seconds: 60
+
+# Statistics & Analytics
+statistics:
+  enabled: true
+  track_refunds: true
+  track_blocked_crafts: true
+  track_template_removals: true
+  track_purged_items: true
+  reset_on_reload: false
+  log_to_file: false
+
+# Debug Mode
+debug:
+  enabled: false
+  log_loot_events: false
+  log_craft_events: false
+  log_config_changes: true
+  verbose_messages: false
+
+# World-Specific Configurations
+worlds:
+  world:
+  world_nether:
+  world_end:
+# If an item is not specified, the global config will be used.
+
+# Configuration Presets (auto-generated)
+presets: {}

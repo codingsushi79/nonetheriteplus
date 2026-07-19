@@ -1,0 +1,4 @@
+limits:
+  enabled: false
+  # 0 = unlimited; counts netherite gear/tools in inventory
+  max_netherite_items: 0

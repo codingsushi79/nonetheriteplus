@@ -19,21 +19,79 @@ jobs:
     permissions:
       contents: write
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - mc_target: '26'
+          # Paper API-compatible builds (Paper/Spigot/Bukkit/Purpur/Folia all run the same jar)
+          - id: paper-26
+            mc_target: '26'
             java_version: '25'
-            game_version_range: '26.x.x'
+            jar_suffix: '26.x.x'
+            modrinth_loaders: |-
+              paper
+              spigot
+              bukkit
+              purpur
+              folia
             modrinth_game_versions: |-
               26.1.x
-          - mc_target: '1.21'
+          - id: paper-1.21
+            mc_target: '1.21'
             java_version: '21'
-            game_version_range: '1.21.x'
+            jar_suffix: '1.21.x'
+            modrinth_loaders: |-
+              paper
+              spigot
+              bukkit
+              purpur
+              folia
             modrinth_game_versions: |-
               1.21.x
+          # Fabric mod build. Quilt is tagged onto the same jar: Quilt Loader
+          # runs Fabric mods unmodified via Quilted Fabric API, and this mod
+          # only uses stock fabric-api, so there's no separate Quilt codebase.
+          - id: fabric-1.21
+            ref: fabric
+            mc_target: '1.21'
+            java_version: '21'
+            jar_suffix: 'fabric-1.21.x'
+            modrinth_loaders: |-
+              fabric
+              quilt
+            modrinth_game_versions: |-
+              1.21.4
+          # Forge mod build (separate codebase, see the `forge` branch).
+          - id: forge-1.21
+            ref: forge
+            mc_target: '1.21'
+            java_version: '21'
+            jar_suffix: 'forge-1.21.x'
+            modrinth_loaders: |-
+              forge
+            modrinth_game_versions: |-
+              1.21.4
+          # NeoForge mod build (separate codebase, see the `neoforge` branch).
+          - id: neoforge-1.21
+            ref: neoforge
+            mc_target: '1.21'
+            java_version: '21'
+            jar_suffix: 'neoforge-1.21.x'
+            modrinth_loaders: |-
+              neoforge
+            modrinth_game_versions: |-
+              1.21.4
+          # NOTE: 26.x builds for fabric/forge/neoforge are intentionally not
+          # in this matrix yet. Mojang has not published official mappings
+          # for any 26.x release, which Fabric Loom/ForgeGradle/NeoGradle all
+          # need to build against the game jar. Add matrix entries here
+          # (mc_target: '26', ref: fabric/forge/neoforge) once that lands
+          # upstream -- the branches' build.gradle files already support
+          # -PmcTarget=26.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.ref || github.ref }}
 
       - name: Set version metadata
         run: |
@@ -45,10 +103,10 @@ jobs:
             RELEASE_TAG="v${{ github.event.inputs.version }}"
           fi
           VERSION="${VERSION#v}"
-          GAME_VERSION_RANGE="${{ matrix.game_version_range }}"
-          MODRINTH_VERSION="${VERSION}+${GAME_VERSION_RANGE}"
-          MODRINTH_NAME="NoNetherite+ [v${VERSION}+${GAME_VERSION_RANGE}]"
-          JAR_FILE="NoNetheritePlus-${VERSION}-${GAME_VERSION_RANGE}.jar"
+          JAR_SUFFIX="${{ matrix.jar_suffix }}"
+          MODRINTH_VERSION="${VERSION}+${JAR_SUFFIX}"
+          MODRINTH_NAME="NoNetherite+ [v${VERSION}+${JAR_SUFFIX}]"
+          JAR_FILE="NoNetheritePlus-${VERSION}-${JAR_SUFFIX}.jar"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "MODRINTH_VERSION=$MODRINTH_VERSION" >> "$GITHUB_ENV"
           echo "MODRINTH_NAME=$MODRINTH_NAME" >> "$GITHUB_ENV"
@@ -88,10 +146,7 @@ jobs:
           name: ${{ env.MODRINTH_NAME }}
           version: ${{ env.MODRINTH_VERSION }}
           changelog: ${{ env.CHANGELOG }}
-          loaders: |-
-            paper
-            spigot
-            bukkit
+          loaders: ${{ matrix.modrinth_loaders }}
           game-versions: ${{ matrix.modrinth_game_versions }}
           files: build/libs/${{ env.JAR_FILE }}
 
@@ -101,6 +156,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/${JAR_FILE}" --clobber
 
+<<<<<<< HEAD
   notify-discord:
     name: Discord notification
     needs: release
@@ -151,3 +207,39 @@ jobs:
             -H "Content-Type: application/json" \
             -d @- \
             "$DISCORD_WEBHOOK_URL"
+=======
+  notify:
+    name: Discord notification
+    needs: release
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send single Discord notification for the whole run
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          STATUS: ${{ needs.release.result }}
+          VERSION: ${{ github.event.release.tag_name || github.event.inputs.version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL secret not set, skipping Discord notification."
+            exit 0
+          fi
+
+          if [ "$STATUS" = "success" ]; then
+            TITLE="NoNetheritePlus $VERSION released"
+            COLOR=3066993
+          else
+            TITLE="NoNetheritePlus $VERSION release build failed"
+            COLOR=15158332
+          fi
+
+          PAYLOAD=$(jq -n \
+            --arg title "$TITLE" \
+            --arg desc "All loader builds (paper/spigot/bukkit/purpur/folia, fabric/quilt, forge, neoforge): **$STATUS**" \
+            --arg url "$RUN_URL" \
+            --argjson color "$COLOR" \
+            '{embeds: [{title: $title, description: $desc, url: $url, color: $color}]}')
+
+          curl -sf -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
+>>>>>>> 9f785e7 (Rewrite release workflow into a single 5-leg parallel matrix covering Paper/Spigot/Bukkit/Purpur/Folia (26.x + 1.21.x), Fabric+Quilt, Forge, and NeoForge, with one Discord notification for the whole run.)
