@@ -12,6 +12,10 @@ on:
         description: Changelog (markdown)
         required: false
         default: ''
+      legs:
+        description: Optional comma-separated matrix ids to run (e.g. fabric-1.21); empty runs all
+        required: false
+        default: ''
 
 jobs:
   release:
@@ -138,13 +142,17 @@ jobs:
               neoforge
             modrinth_game_versions: |-
               1.21.4
+    env:
+      SKIP_LEG: ${{ github.event.inputs.legs != '' && !contains(format(',{0},', github.event.inputs.legs), format(',{0},', matrix.id)) }}
     steps:
       - name: Checkout repository
+        if: env.SKIP_LEG != 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ matrix.ref || github.ref }}
 
       - name: Set version metadata
+        if: env.SKIP_LEG != 'true'
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
             VERSION="${{ github.event.release.tag_name }}"
@@ -165,6 +173,7 @@ jobs:
           echo "JAR_FILE=$JAR_FILE" >> "$GITHUB_ENV"
 
       - name: Set changelog
+        if: env.SKIP_LEG != 'true'
         env:
           RELEASE_BODY: ${{ github.event.release.body }}
           MANUAL_CHANGELOG: ${{ github.event.inputs.changelog }}
@@ -179,17 +188,24 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_ENV"
 
-      - name: Set up JDK ${{ matrix.java_version }}
+      # Both JDKs are installed: Gradle itself runs on 25 (newer Loom needs it)
+      # and the build's toolchain picks 21 or 25 from mcTarget.
+      - name: Set up JDK 21 + 25
+        if: env.SKIP_LEG != 'true'
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ matrix.java_version }}
+          java-version: |
+            21
+            25
           distribution: temurin
           cache: gradle
 
       - name: Build with Gradle
+        if: env.SKIP_LEG != 'true'
         run: ./gradlew build --no-daemon -PreleaseVersion="$VERSION" -PmcTarget="${{ matrix.mc_target }}"
 
       - name: Upload to Modrinth
+        if: env.SKIP_LEG != 'true'
         uses: cloudnode-pro/modrinth-publish@v2
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}
@@ -202,10 +218,15 @@ jobs:
           files: build/libs/${{ env.JAR_FILE }}
 
       - name: Upload jar to GitHub Release
-        if: github.event_name == 'release'
+        if: env.SKIP_LEG != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload "${{ github.event.release.tag_name }}" "build/libs/${JAR_FILE}" --clobber
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "build/libs/${JAR_FILE}" --clobber
+          else
+            echo "No GitHub release $RELEASE_TAG; skipping jar upload."
+          fi
 
   notify-discord:
     name: Discord notification
