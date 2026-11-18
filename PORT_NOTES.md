@@ -1,8 +1,7 @@
 # Fabric port notes
 
-Reimplementation of NoNetheritePlus for Fabric, targeting Minecraft 1.21.x
-(26.x is configured in `build.gradle` but not currently buildable -- see
-"26.x status" below).
+Reimplementation of NoNetheritePlus for Fabric, built for Minecraft 26.3,
+26.2 and 1.21.4 (`-PmcTarget=26.3|26.2|1.21`; `26` is an alias for 26.3).
 
 ## Design decisions (differ from the Paper plugin)
 
@@ -31,22 +30,32 @@ Reimplementation of NoNetheritePlus for Fabric, targeting Minecraft 1.21.x
   per-world `LootGenerateEvent` handling despite being registered globally
   at table-load time.
 
-## 26.x status
+## 26.x support (added in 1.6.1)
 
-Confirmed against Mojang's version manifest (piston-meta) that **no 26.x
-release (26.1, 26.1.1, 26.1.2, 26.2 all checked) has published
-`client_mappings`/`server_mappings` yet**, unlike 1.21.4 which does. Fabric
-Loom (and Quilt Loom / ForgeGradle / NeoGradle, which need the same data)
-cannot deobfuscate the game jar without this, so building for 26.x currently
-fails with "Failed to find official mojang mappings for 26.1.2" -- this is
-an upstream gap, not a bug in this project. `-PmcTarget=26` is left wired up
-in `build.gradle` and will work as soon as Mojang (or Yarn) publishes
-mappings for a 26.x version.
+Minecraft 26.x is unobfuscated -- Mojang no longer publishes mappings
+because the game jar already uses Mojang's names. Earlier notes here said
+26.x was blocked on missing mappings; that was the wrong way round.
+
+- 1.21.4 is obfuscated, so it uses Loom's remapping plugin (`fabric-loom`)
+  plus Mojang mappings. 26.x ships unobfuscated, so it uses the
+  non-remapping `net.fabricmc.fabric-loom` plugin with plain `implementation`
+  dependencies -- `build.gradle` picks the plugin from `-PmcTarget`.
+- Version-specific code lives in `src/1.21/java` and `src/26/java`:
+  `VersionCompat` (dimension id, op-permission check, `pack.mcmeta` format)
+  and `StripUpgradeTemplateFunction` (`LootItemFunctionType` was replaced by
+  plain `MapCodec`s in 26.x).
+- Shared 26.x fixes (all versions): purge iterates inventory slots by index
+  instead of the `items`/`armor`/`offhand` lists (split up in 1.21.5+);
+  generated smithing recipes use plain-string ingredients (the
+  `{"item": ...}` object form was dropped in 1.21.2); the generated datapack
+  declares the running game's data-pack format instead of a hard-coded one.
+- The netherite spear / horse armor recipe ids in `src/26` were checked
+  against the real 26.3 server jar.
 
 ## Verified
 
-`./gradlew build -PmcTarget=1.21` succeeds and produces
-`build/libs/NoNetheritePlus-<version>-fabric-1.21.x.jar` (confirmed
+`./gradlew build -PmcTarget=<26.3|26.2|1.21>` succeeds for all three
+targets and produces `build/libs/NoNetheritePlus-<version>-fabric-<26.3|26.2|1.21.x>.jar` (confirmed
 contents: compiled classes, `fabric.mod.json` with version substituted,
 bundled `config.yml`, bundled `snakeyaml` jar). This is real compiler/Loom
 verification, not a guess.

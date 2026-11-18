@@ -3,9 +3,8 @@ package com.codingsushi.nonetheriteplus.common;
 import java.util.List;
 
 /**
- * MC 26.x-exclusive netherite items. Item/recipe ids here are inferred from
- * Mojang's standard naming convention (not independently confirmed against a
- * live 26.x server) -- verify against an actual game before relying on them.
+ * MC 26.x-exclusive netherite items. Item/recipe ids verified against the
+ * 26.3 server jar's data/minecraft/recipe folder.
  */
 public final class NetheriteCatalog {
 

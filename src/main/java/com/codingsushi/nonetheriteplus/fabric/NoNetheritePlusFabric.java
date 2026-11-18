@@ -17,7 +17,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.repository.PackRepository;
@@ -63,7 +62,7 @@ public class NoNetheritePlusFabric implements ModInitializer {
     public void onInitialize() {
         StripUpgradeTemplateFunction.register();
         StripUpgradeTemplateFunction.setPredicate((id, context) -> {
-            String worldName = context.getLevel().dimension().location().toString();
+            String worldName = VersionCompat.dimensionId(context.getLevel());
             boolean strip = getWorldConfigValue("disable_upgrade_templates", worldName, false);
             if (strip) {
                 incrementStatistic("total_template_removals");
@@ -179,7 +178,7 @@ public class NoNetheritePlusFabric implements ModInitializer {
             }
 
             Files.writeString(packRoot.resolve("pack.mcmeta"),
-                "{\"pack\":{\"pack_format\":48,\"description\":\"NoNetheritePlus dynamic overrides\"}}",
+                VersionCompat.packMcmeta("NoNetheritePlus dynamic overrides"),
                 StandardCharsets.UTF_8);
 
             int blocked = 0;
@@ -190,9 +189,9 @@ public class NoNetheritePlusFabric implements ModInitializer {
                 String recipePath = entry.recipeId().substring(entry.recipeId().indexOf(':') + 1);
                 String json = "{"
                     + "\"type\":\"minecraft:smithing_transform\","
-                    + "\"template\":{\"item\":\"minecraft:barrier\"},"
-                    + "\"base\":{\"item\":\"minecraft:barrier\"},"
-                    + "\"addition\":{\"item\":\"minecraft:barrier\"},"
+                    + "\"template\":\"minecraft:barrier\","
+                    + "\"base\":\"minecraft:barrier\","
+                    + "\"addition\":\"minecraft:barrier\","
                     + "\"result\":{\"id\":\"" + entry.itemId() + "\",\"count\":1}"
                     + "}";
                 Files.writeString(recipeDir.resolve(recipePath + ".json"), json, StandardCharsets.UTF_8);
@@ -249,21 +248,15 @@ public class NoNetheritePlusFabric implements ModInitializer {
     }
 
     private int removeNetheriteFromPlayer(ServerPlayer player) {
+        // Index-based access covers main inventory, armor and offhand on every
+        // supported version (the backing lists were split up in 1.21.5+).
         int removed = 0;
         Inventory inventory = player.getInventory();
-        removed += clearNetheriteItems(inventory.items);
-        removed += clearNetheriteItems(inventory.armor);
-        removed += clearNetheriteItems(inventory.offhand);
-        return removed;
-    }
-
-    private int clearNetheriteItems(List<ItemStack> items) {
-        int removed = 0;
-        for (int i = 0; i < items.size(); i++) {
-            ItemStack item = items.get(i);
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack item = inventory.getItem(slot);
             if (isNetheriteMaterial(item)) {
                 removed += item.getCount();
-                items.set(i, ItemStack.EMPTY);
+                inventory.setItem(slot, ItemStack.EMPTY);
             }
         }
         return removed;
@@ -356,7 +349,7 @@ public class NoNetheritePlusFabric implements ModInitializer {
                 return 1;
             })
             .then(Commands.literal("reload")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     saveStatistics();
                     reloadConfig();
@@ -368,19 +361,19 @@ public class NoNetheritePlusFabric implements ModInitializer {
                     return 1;
                 }))
             .then(Commands.literal("stats")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     sendStats(ctx.getSource());
                     return 1;
                 }))
             .then(Commands.literal("statistics")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     sendStats(ctx.getSource());
                     return 1;
                 }))
             .then(Commands.literal("debug")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal("§eDebug mode is currently: §f" + (debugMode ? "ON" : "OFF")), false);
                     return 1;
@@ -404,7 +397,7 @@ public class NoNetheritePlusFabric implements ModInitializer {
                         return 1;
                     })))
             .then(Commands.literal("preset")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .then(Commands.literal("save")
                     .then(Commands.argument("name", StringArgumentType.word())
                         .executes(ctx -> presetSave(ctx.getSource(), StringArgumentType.getString(ctx, "name")))))

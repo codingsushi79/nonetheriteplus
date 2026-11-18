@@ -1,35 +1,55 @@
 plugins {
     id 'java'
-    id 'fabric-loom' version '1.17.16'
+    // 1.21.x is obfuscated and needs Loom's remapping plugin + Mojang
+    // mappings. 26.x ships unobfuscated, so it uses the non-remapping plugin.
+    id 'fabric-loom' version '1.19.4' apply false
+    id 'net.fabricmc.fabric-loom' version '1.19.4' apply false
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.6.0'
+version = findProperty('releaseVersion') ?: '1.6.1'
 
 def mcTarget = findProperty('mcTarget') ?: '1.21'
 
 def targetConfigs = [
-    '26': [
-        minecraftVersion: '26.1.2',
-        loaderVersion   : '0.19.3',
-        fabricApiVersion: '0.155.2+26.1.2',
+    '26.3': [
+        minecraftVersion: '26.3',
+        loaderVersion   : '0.20.1',
+        fabricApiVersion: '0.166.2+26.3',
         javaVersion     : 25,
-        gameVersionTag  : '26.x.x',
+        gameVersionTag  : '26.3',
+        srcDir          : '26',
+        obfuscated      : false,
+    ],
+    '26.2': [
+        minecraftVersion: '26.2',
+        loaderVersion   : '0.20.1',
+        fabricApiVersion: '0.161.0+26.2',
+        javaVersion     : 25,
+        gameVersionTag  : '26.2',
+        srcDir          : '26',
+        obfuscated      : false,
     ],
     '1.21': [
         minecraftVersion: '1.21.4',
-        loaderVersion   : '0.19.3',
+        loaderVersion   : '0.20.1',
         fabricApiVersion: '0.119.4+1.21.4',
         javaVersion     : 21,
         gameVersionTag  : '1.21.x',
+        srcDir          : '1.21',
+        obfuscated      : true,
     ],
 ]
+// Backwards-compatible alias: -PmcTarget=26 builds the newest 26.x target.
+targetConfigs['26'] = targetConfigs['26.3']
 
 if (!targetConfigs.containsKey(mcTarget)) {
     throw new GradleException("Unknown mcTarget '${mcTarget}'. Expected one of: ${targetConfigs.keySet()}")
 }
 
 def activeTarget = targetConfigs[mcTarget]
+
+apply plugin: activeTarget.obfuscated ? 'fabric-loom' : 'net.fabricmc.fabric-loom'
 
 java {
     toolchain {
@@ -41,7 +61,7 @@ sourceSets {
     main {
         java {
             srcDir 'src/main/java'
-            srcDir "src/${mcTarget}/java"
+            srcDir "src/${activeTarget.srcDir}/java"
         }
     }
 }
@@ -56,9 +76,14 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${activeTarget.minecraftVersion}"
-    mappings loom.officialMojangMappings()
-    modImplementation "net.fabricmc:fabric-loader:${activeTarget.loaderVersion}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${activeTarget.fabricApiVersion}"
+    if (activeTarget.obfuscated) {
+        mappings loom.officialMojangMappings()
+        modImplementation "net.fabricmc:fabric-loader:${activeTarget.loaderVersion}"
+        modImplementation "net.fabricmc.fabric-api:fabric-api:${activeTarget.fabricApiVersion}"
+    } else {
+        implementation "net.fabricmc:fabric-loader:${activeTarget.loaderVersion}"
+        implementation "net.fabricmc.fabric-api:fabric-api:${activeTarget.fabricApiVersion}"
+    }
     implementation 'org.yaml:snakeyaml:2.3'
     include 'org.yaml:snakeyaml:2.3'
 }
@@ -69,16 +94,23 @@ loom {
 
 processResources {
     inputs.property 'version', version
-    inputs.property 'gameVersionTag', activeTarget.gameVersionTag
+    inputs.property 'minecraftVersion', activeTarget.minecraftVersion
+    inputs.property 'javaVersion', activeTarget.javaVersion
     filesMatching('fabric.mod.json') {
-        expand version: version, gameVersionTag: activeTarget.gameVersionTag
+        expand version: version,
+            minecraftDependency: activeTarget.obfuscated ? '~1.21.4' : "~${activeTarget.minecraftVersion}",
+            javaVersion: activeTarget.javaVersion
     }
 }
 
+def jarName = "NoNetheritePlus-${version}-fabric-${activeTarget.gameVersionTag}.jar"
+
 jar {
-    archiveFileName = "NoNetheritePlus-${version}-fabric-${activeTarget.gameVersionTag}.jar"
+    archiveFileName = jarName
 }
 
-remapJar {
-    archiveFileName = "NoNetheritePlus-${version}-fabric-${activeTarget.gameVersionTag}.jar"
+if (activeTarget.obfuscated) {
+    remapJar {
+        archiveFileName = jarName
+    }
 }
