@@ -2,7 +2,7 @@
 
 Have you ever wanted to disable netherite armor on your server but all the plugins aren't really what you are looking for? Well look no more! NoNetherite+ allows you to configure what parts to disable!
 
-**Compatibility:** Minecraft 26.x (Java 25) or 1.21.x (Java 21) on Paper/Spigot/Bukkit/Purpur/Folia. Also available for Fabric, Quilt, Forge, and NeoForge on 1.21.x (see below) — 26.x builds for those four aren't out yet; Mojang hasn't published mappings for 26.x, which the mod-loader toolchains need. Optional soft-depend on Paper: PlaceholderAPI.
+**Compatibility:** Minecraft 26.x (Java 25) or 1.21.x (Java 21) on Paper/Spigot/Bukkit/Purpur/Folia. The 26.x jar runs on 26.1, 26.2 and 26.3. Also available for Fabric, Quilt, Forge, and NeoForge on 26.3, 26.2 and 1.21.4 (see below) — those are separate jars per Minecraft version. Optional soft-depend on Paper: PlaceholderAPI.
 
 <details>
 <summary>Paper/Spigot/Bukkit/Purpur/Folia Configuration</summary>
@@ -303,12 +303,12 @@ to apply changes.
 <details>
 <summary>Fabric / Quilt</summary>
 
-**1.21.x only for now** (see the compatibility note above for why 26.x isn't available yet).
+Available for Minecraft **26.3**, **26.2** and **1.21.4** — grab the jar that matches your server (`fabric-26.3`, `fabric-26.2` or `fabric-1.21.x`).
 
 Quilt runs the same jar as Fabric: Quilt Loader supports Fabric mods directly through Quilted Fabric API (QFAPI), and this mod only uses standard `fabric-api`, so there's no separate Quilt build. Install [Fabric API](https://modrinth.com/mod/fabric-api) (or QFAPI on Quilt) alongside it.
 
-1. Install Fabric Loader (or Quilt Loader) for Minecraft 1.21.4.
-2. Place the `fabric-1.21.x` jar and Fabric API/QFAPI into your `mods/` folder.
+1. Install Fabric Loader (or Quilt Loader) for your Minecraft version.
+2. Place the matching `fabric-*` jar and Fabric API/QFAPI into your `mods/` folder.
 3. Start the server. A `config/nonetheriteplus/config.yml` file is created on first boot.
 4. Run `/nonetherite reload` after editing the config to apply changes.
 
@@ -319,10 +319,10 @@ Quilt runs the same jar as Fabric: Quilt Loader supports Fabric mods directly th
 <details>
 <summary>Forge</summary>
 
-**1.21.x only for now.** Same feature set and config-file behavior as the Fabric/Quilt build above (see that section for the supported vs. not-yet-ported list).
+Available for Minecraft **26.3**, **26.2** and **1.21.4**. Same feature set and config-file behavior as the Fabric/Quilt build above (see that section for the supported vs. not-yet-ported list).
 
-1. Install Forge for Minecraft 1.21.4.
-2. Place the `forge-1.21.x` jar into your `mods/` folder.
+1. Install Forge for your Minecraft version.
+2. Place the matching `forge-*` jar (`forge-26.3`, `forge-26.2` or `forge-1.21.x`) into your `mods/` folder.
 3. Start the server. A `config/nonetheriteplus/config.yml` file is created on first boot.
 4. Run `/nonetherite reload` after editing the config to apply changes.
 
@@ -331,10 +331,10 @@ Quilt runs the same jar as Fabric: Quilt Loader supports Fabric mods directly th
 <details>
 <summary>NeoForge</summary>
 
-**1.21.x only for now.** Same feature set and config-file behavior as the Fabric/Quilt build above.
+Available for Minecraft **26.3**, **26.2** and **1.21.4**. Same feature set and config-file behavior as the Fabric/Quilt build above.
 
-1. Install NeoForge for Minecraft 1.21.4.
-2. Place the `neoforge-1.21.x` jar into your `mods/` folder.
+1. Install NeoForge for your Minecraft version.
+2. Place the matching `neoforge-*` jar (`neoforge-26.3`, `neoforge-26.2` or `neoforge-1.21.x`) into your `mods/` folder.
 3. Start the server. A `config/nonetheriteplus/config.yml` file is created on first boot.
 4. Run `/nonetherite reload` after editing the config to apply changes.
 

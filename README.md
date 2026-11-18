@@ -13,7 +13,8 @@ A Minecraft plugin for Paper/Spigot that provides configurable netherite restric
 - **Admin Tools**: inspect, config GUI, audit log, presets, stats, debug
 - **PlaceholderAPI** (soft-depend): `%nonetherite_version%`, `%nonetherite_blocked_crafts%`, `%nonetherite_disabled_<item>%`
 - **World-Specific Configurations** and **configuration presets**
-- **Dual builds**: Minecraft 26.x (Java 25) and 1.21.x (Java 21)
+- **Dual builds**: Minecraft 26.x (26.1–26.3, Java 25) and 1.21.x (Java 21)
+- **Mod loaders**: Fabric/Quilt, Forge and NeoForge builds for 26.3, 26.2 and 1.21.4 (see the `fabric`, `forge` and `neoforge` branches)
 
 ## Building
 
@@ -25,14 +26,18 @@ A Minecraft plugin for Paper/Spigot that provides configurable netherite restric
 ### Build Commands
 
 ```bash
-# Minecraft 26.x
+# Minecraft 26.x (compiled against 26.1.2 so one jar runs on 26.1–26.3)
 ./gradlew build -PmcTarget=26
+
+# Compile-check against newer Paper APIs
+./gradlew build -PmcTarget=26.2
+./gradlew build -PmcTarget=26.3
 
 # Minecraft 1.21.x
 ./gradlew build -PmcTarget=1.21
 ```
 
-JARs land in `build/libs/` as `NoNetheritePlus-1.6.0-26.x.x.jar` / `NoNetheritePlus-1.6.0-1.21.x.jar`.
+JARs land in `build/libs/` as `NoNetheritePlus-1.6.1-26.x.x.jar` / `NoNetheritePlus-1.6.1-1.21.x.jar`.
 
 ## Installation
 
@@ -111,12 +116,13 @@ audit:
 
 ## Compatibility
 
-- Minecraft **26.x** (Paper/Spigot, Java 25) or **1.21.x** (Java 21)
+- Minecraft **26.1–26.3** (Paper/Spigot/Bukkit/Purpur/Folia, Java 25) or **1.21.x** (Java 21)
+- Fabric/Quilt, Forge, NeoForge: **26.3**, **26.2** and **1.21.4**
 - Optional: PlaceholderAPI
 
 ## Releasing
 
-Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds both JARs, uploads them to [Modrinth](https://modrinth.com/plugin/nonetherite+), attaches them to the GitHub release, and posts an `@everyone` announcement in Discord.
+Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds every Paper and mod-loader JAR, uploads them to [Modrinth](https://modrinth.com/plugin/nonetherite+), attaches them to the GitHub release, and posts an `@everyone` announcement in Discord.
 
 ### One-time setup
 
@@ -127,7 +133,7 @@ Pushes to `main` run the **Build** workflow. Publishing a GitHub release builds 
 ### Publish a new version
 
 1. Bump `build.gradle` version (or rely on the release tag).
-2. Create a GitHub release tagged like `v1.6.0`.
+2. Create a GitHub release tagged like `v1.6.1`.
 3. Publish — the Release workflow handles the rest.
 
 ### Join the [Discord!](https://discord.gg/2QU5WzN8hc)

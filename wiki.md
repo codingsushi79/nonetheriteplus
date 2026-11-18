@@ -21,11 +21,12 @@ A Minecraft plugin for Paper/Spigot 1.26+ that provides configurable netherite c
 - **World-Specific Configurations**: Different settings per world for complex servers
 - **Configuration Presets**: Save and load different config profiles
 - **Debug Mode**: Enhanced logging for troubleshooting
-- **Dual builds**: Minecraft 26.x and 1.21.x
+- **Dual builds**: Minecraft 26.x (26.1–26.3) and 1.21.x
+- **Mod loaders**: Fabric/Quilt, Forge and NeoForge for 26.3, 26.2 and 1.21.4
 
 ## Compatibility
 
-- Minecraft 26.x (Java 25) or 1.21.x (Java 21)
+- Minecraft 26.1–26.3 (Java 25) or 1.21.x (Java 21)
 - Paper/Spigot servers
 - Optional: PlaceholderAPI
 
@@ -43,7 +44,7 @@ A Minecraft plugin for Paper/Spigot 1.26+ that provides configurable netherite c
 ./gradlew build -PmcTarget=1.21
 ```
 
-The compiled JARs will be located in `build/libs/NoNetheritePlus-1.6.0-26.x.x.jar` and `NoNetheritePlus-1.6.0-1.21.x.jar`.
+The compiled JARs will be located in `build/libs/NoNetheritePlus-1.6.1-26.x.x.jar` and `NoNetheritePlus-1.6.1-1.21.x.jar`.
 
 ## Installation
 

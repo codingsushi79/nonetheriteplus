@@ -3,22 +3,41 @@ plugins {
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.6.0'
+version = findProperty('releaseVersion') ?: '1.6.1'
 
 def mcTarget = findProperty('mcTarget') ?: '26'
 
 def targetConfigs = [
+    // The released 26.x jar is compiled against the oldest supported 26.x API
+    // (26.1.2) so it loads on every 26.x server; the 26.2 / 26.3 targets exist
+    // so CI proves the same sources still compile against newer Paper APIs.
     '26': [
         paperApi       : 'io.papermc.paper:paper-api:26.1.2.build.69-stable',
         javaVersion    : 25,
         apiVersion     : '1.26',
         gameVersionTag : '26.x.x',
+        srcDir         : '26',
+    ],
+    '26.2': [
+        paperApi       : 'io.papermc.paper:paper-api:26.2.build.135-stable',
+        javaVersion    : 25,
+        apiVersion     : '1.26',
+        gameVersionTag : '26.x.x',
+        srcDir         : '26',
+    ],
+    '26.3': [
+        paperApi       : 'io.papermc.paper:paper-api:26.3.build.255-stable',
+        javaVersion    : 25,
+        apiVersion     : '1.26',
+        gameVersionTag : '26.x.x',
+        srcDir         : '26',
     ],
     '1.21': [
         paperApi       : 'io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT',
         javaVersion    : 21,
         apiVersion     : '1.21',
         gameVersionTag : '1.21.x',
+        srcDir         : '1.21',
     ],
 ]
 
@@ -38,7 +57,7 @@ sourceSets {
     main {
         java {
             srcDir 'src/main/java'
-            srcDir "src/${mcTarget}/java"
+            srcDir "src/${activeTarget.srcDir}/java"
         }
     }
 }

@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version (e.g. 1.6.0)
+        description: Release version (e.g. 1.6.1)
         required: true
       changelog:
         description: Changelog (markdown)
@@ -35,6 +35,8 @@ jobs:
               folia
             modrinth_game_versions: |-
               26.1.x
+              26.2
+              26.3
           - id: paper-1.21
             mc_target: '1.21'
             java_version: '21'
@@ -50,6 +52,26 @@ jobs:
           # Fabric mod build. Quilt is tagged onto the same jar: Quilt Loader
           # runs Fabric mods unmodified via Quilted Fabric API, and this mod
           # only uses stock fabric-api, so there's no separate Quilt codebase.
+          - id: fabric-26.3
+            ref: fabric
+            mc_target: '26.3'
+            java_version: '25'
+            jar_suffix: 'fabric-26.3'
+            modrinth_loaders: |-
+              fabric
+              quilt
+            modrinth_game_versions: |-
+              26.3
+          - id: fabric-26.2
+            ref: fabric
+            mc_target: '26.2'
+            java_version: '25'
+            jar_suffix: 'fabric-26.2'
+            modrinth_loaders: |-
+              fabric
+              quilt
+            modrinth_game_versions: |-
+              26.2
           - id: fabric-1.21
             ref: fabric
             mc_target: '1.21'
@@ -60,7 +82,25 @@ jobs:
               quilt
             modrinth_game_versions: |-
               1.21.4
-          # Forge mod build (separate codebase, see the `forge` branch).
+          # Forge mod builds (separate codebase, see the `forge` branch).
+          - id: forge-26.3
+            ref: forge
+            mc_target: '26.3'
+            java_version: '25'
+            jar_suffix: 'forge-26.3'
+            modrinth_loaders: |-
+              forge
+            modrinth_game_versions: |-
+              26.3
+          - id: forge-26.2
+            ref: forge
+            mc_target: '26.2'
+            java_version: '25'
+            jar_suffix: 'forge-26.2'
+            modrinth_loaders: |-
+              forge
+            modrinth_game_versions: |-
+              26.2
           - id: forge-1.21
             ref: forge
             mc_target: '1.21'
@@ -70,7 +110,25 @@ jobs:
               forge
             modrinth_game_versions: |-
               1.21.4
-          # NeoForge mod build (separate codebase, see the `neoforge` branch).
+          # NeoForge mod builds (separate codebase, see the `neoforge` branch).
+          - id: neoforge-26.3
+            ref: neoforge
+            mc_target: '26.3'
+            java_version: '25'
+            jar_suffix: 'neoforge-26.3'
+            modrinth_loaders: |-
+              neoforge
+            modrinth_game_versions: |-
+              26.3
+          - id: neoforge-26.2
+            ref: neoforge
+            mc_target: '26.2'
+            java_version: '25'
+            jar_suffix: 'neoforge-26.2'
+            modrinth_loaders: |-
+              neoforge
+            modrinth_game_versions: |-
+              26.2
           - id: neoforge-1.21
             ref: neoforge
             mc_target: '1.21'
@@ -80,13 +138,6 @@ jobs:
               neoforge
             modrinth_game_versions: |-
               1.21.4
-          # NOTE: 26.x builds for fabric/forge/neoforge are intentionally not
-          # in this matrix yet. Mojang has not published official mappings
-          # for any 26.x release, which Fabric Loom/ForgeGradle/NeoGradle all
-          # need to build against the game jar. Add matrix entries here
-          # (mc_target: '26', ref: fabric/forge/neoforge) once that lands
-          # upstream -- the branches' build.gradle files already support
-          # -PmcTarget=26.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -174,11 +225,10 @@ jobs:
           VERSION="${VERSION#v}"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "GITHUB_RELEASE_URL=$GITHUB_RELEASE_URL" >> "$GITHUB_ENV"
-          echo "MODRINTH_26_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2B26.x.x" >> "$GITHUB_ENV"
-          echo "MODRINTH_121_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2B1.21.x" >> "$GITHUB_ENV"
-          echo "MODRINTH_FABRIC_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2Bfabric-1.21.x" >> "$GITHUB_ENV"
-          echo "MODRINTH_FORGE_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2Bforge-1.21.x" >> "$GITHUB_ENV"
-          echo "MODRINTH_NEOFORGE_URL=https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2Bneoforge-1.21.x" >> "$GITHUB_ENV"
+          BASE="https://modrinth.com/plugin/nonetherite+/version/${VERSION}%2B"
+          echo "MODRINTH_26_URL=${BASE}26.x.x" >> "$GITHUB_ENV"
+          echo "MODRINTH_121_URL=${BASE}1.21.x" >> "$GITHUB_ENV"
+          echo "MODRINTH_VERSIONS_URL=https://modrinth.com/plugin/nonetherite+/versions" >> "$GITHUB_ENV"
 
       - name: Notify Discord
         env:
@@ -197,9 +247,7 @@ jobs:
             "GitHub release: ${GITHUB_RELEASE_URL}" \
             "Modrinth (paper/spigot/bukkit/purpur/folia, 26.x): ${MODRINTH_26_URL}" \
             "Modrinth (paper/spigot/bukkit/purpur/folia, 1.21.x): ${MODRINTH_121_URL}" \
-            "Modrinth (fabric/quilt): ${MODRINTH_FABRIC_URL}" \
-            "Modrinth (forge): ${MODRINTH_FORGE_URL}" \
-            "Modrinth (neoforge): ${MODRINTH_NEOFORGE_URL}")
+            "Modrinth (fabric/quilt, forge, neoforge — 26.3, 26.2, 1.21.x): ${MODRINTH_VERSIONS_URL}")
 
           jq -n \
             --arg content "$CONTENT" \
