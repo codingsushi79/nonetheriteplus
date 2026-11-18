@@ -1,8 +1,7 @@
 # Forge port notes
 
-Reimplementation of NoNetheritePlus for Forge, targeting Minecraft 1.21.x
-(26.x is configured in `build.gradle` but not currently buildable -- same
-reason as the Fabric branch, see "26.x status" below).
+Reimplementation of NoNetheritePlus for Forge, built for Minecraft 26.3,
+26.2 and 1.21.4 (`-PmcTarget=26.3|26.2|1.21`; `26` is an alias for 26.3).
 
 ## Design decisions (differ from the Paper plugin)
 
@@ -51,18 +50,37 @@ plugin scoped to a dedicated `shade` configuration (not the whole
 `runtimeClasspath`, which pulls in client-only LWJGL natives that don't
 resolve for a server-only mod and shouldn't be bundled anyway).
 
-## 26.x status
+## 26.x support (added in 1.6.1)
 
-Same root cause as the Fabric branch: Mojang has not published official
-mappings for any 26.x release (verified against piston-meta: 26.1, 26.1.1,
-26.1.2, 26.2 all checked, none have them), and ForgeGradle's official
-mapping channel needs that same data. `-PmcTarget=26` is wired up and will
-work once mappings are published.
+Minecraft 26.x is unobfuscated -- Mojang no longer publishes mappings
+because the game jar already uses Mojang's names. Earlier notes here said
+26.x was blocked on missing mappings; that was the wrong way round.
+
+- ForgeGradle 7 builds 26.x directly (no mappings needed, the game ships
+  unobfuscated).
+- Forge 26.x moved to EventBus 7 (one static `BUS` per event, `BusGroup`
+  instead of `IEventBus`), so event registration lives in a per-version
+  `ForgeEventWiring` class in `src/1.21/java` / `src/26/java`. `VersionCompat`
+  in the same folders covers the vanilla API differences (dimension id,
+  op-permission check, `pack.mcmeta` format).
+- Shared 26.x fixes (all versions): purge iterates inventory slots by index
+  instead of the `items`/`armor`/`offhand` lists (split up in 1.21.5+);
+  generated smithing recipes use plain-string ingredients (the
+  `{"item": ...}` object form was dropped in 1.21.2); the generated datapack
+  declares the running game's data-pack format instead of a hard-coded one.
+- Bug fix: the global loot modifier list moved to
+  `data/forge/loot_modifiers/global_loot_modifiers.json`. Forge only reads the list
+  from the `forge` namespace, so in 1.6.0 the template-stripping modifier was
+  never activated.
+- The mod's `/nonetherite` version line now reads the real version from the
+  mod container instead of printing a literal `${version}`.
+- The netherite spear / horse armor recipe ids in `src/26` were checked
+  against the real 26.3 server jar.
 
 ## Verified
 
-`./gradlew build -PmcTarget=1.21` succeeds and produces
-`build/libs/NoNetheritePlus-<version>-forge-1.21.x.jar` (confirmed contents:
+`./gradlew build -PmcTarget=<26.3|26.2|1.21>` succeeds for all three
+targets and produces `build/libs/NoNetheritePlus-<version>-forge-<26.3|26.2|1.21.x>.jar` (confirmed contents:
 compiled classes, `META-INF/mods.toml` with version substituted, bundled
 `config.yml`, bundled `snakeyaml`, GLM datapack JSON). Real compiler/Gradle
 verification, not a guess -- several build-tooling issues (DSL differences,

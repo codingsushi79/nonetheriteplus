@@ -1,28 +1,39 @@
 plugins {
     id 'java'
-    id 'net.minecraftforge.gradle' version '7.0.31'
+    id 'net.minecraftforge.gradle' version '7.0.40'
     id 'com.gradleup.shadow' version '9.6.0'
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.6.0'
+version = findProperty('releaseVersion') ?: '1.6.1'
 
 def mcTarget = findProperty('mcTarget') ?: '1.21'
 
 def targetConfigs = [
-    '26': [
-        minecraftVersion: '26.1.2',
-        forgeVersion    : '26.1-62.0.4',
+    '26.3': [
+        minecraftVersion: '26.3',
+        forgeVersion    : '26.3-66.1.8',
         javaVersion     : 25,
-        gameVersionTag  : '26.x.x',
+        gameVersionTag  : '26.3',
+        srcDir          : '26',
+    ],
+    '26.2': [
+        minecraftVersion: '26.2',
+        forgeVersion    : '26.2-65.1.6',
+        javaVersion     : 25,
+        gameVersionTag  : '26.2',
+        srcDir          : '26',
     ],
     '1.21': [
         minecraftVersion: '1.21.4',
         forgeVersion    : '1.21.4-54.1.17',
         javaVersion     : 21,
         gameVersionTag  : '1.21.x',
+        srcDir          : '1.21',
     ],
 ]
+// Backwards-compatible alias: -PmcTarget=26 builds the newest 26.x target.
+targetConfigs['26'] = targetConfigs['26.3']
 
 if (!targetConfigs.containsKey(mcTarget)) {
     throw new GradleException("Unknown mcTarget '${mcTarget}'. Expected one of: ${targetConfigs.keySet()}")
@@ -40,7 +51,7 @@ sourceSets {
     main {
         java {
             srcDir 'src/main/java'
-            srcDir "src/${mcTarget}/java"
+            srcDir "src/${activeTarget.srcDir}/java"
         }
     }
 }
@@ -74,8 +85,10 @@ dependencies {
 
 processResources {
     inputs.property 'version', version
+    inputs.property 'minecraftVersion', activeTarget.minecraftVersion
     filesMatching('META-INF/mods.toml') {
-        expand version: version
+        expand version: version,
+            minecraftRange: activeTarget.srcDir == '1.21' ? '[1.21.4,1.21.5)' : "[${activeTarget.minecraftVersion},${activeTarget.minecraftVersion}.99)"
     }
 }
 

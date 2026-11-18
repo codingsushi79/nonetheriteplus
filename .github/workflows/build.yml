@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, forge]
   pull_request:
-    branches: [main]
+    branches: [main, forge]
 
 jobs:
   build:
@@ -12,7 +12,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - mc_target: '26'
+          - mc_target: '26.3'
+            java_version: '25'
+          - mc_target: '26.2'
             java_version: '25'
           - mc_target: '1.21'
             java_version: '21'
