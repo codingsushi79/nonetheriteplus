@@ -19,6 +19,7 @@ import net.minecraft.world.level.storage.LevelResource;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.loading.FMLPaths;
@@ -52,7 +53,6 @@ public class NoNetheritePlusNeoForge {
 
     public static final Logger LOGGER = LoggerFactory.getLogger("nonetheriteplus");
     private static final String DATAPACK_ID = "nonetheriteplus_dynamic";
-    private static final String MOD_VERSION = "${version}";
 
     private static final DeferredRegister<com.mojang.serialization.MapCodec<? extends IGlobalLootModifier>> GLM_SERIALIZERS =
         DeferredRegister.create(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, "nonetheriteplus");
@@ -60,6 +60,7 @@ public class NoNetheritePlusNeoForge {
     private static final DeferredHolder<com.mojang.serialization.MapCodec<? extends IGlobalLootModifier>, com.mojang.serialization.MapCodec<StripUpgradeTemplateModifier>> STRIP_TEMPLATE_MODIFIER =
         GLM_SERIALIZERS.register("strip_upgrade_template", () -> StripUpgradeTemplateModifier.CODEC);
 
+    private final String modVersion;
     private MinecraftServer server;
     private Path dataDir;
     private YamlConfig config;
@@ -74,13 +75,14 @@ public class NoNetheritePlusNeoForge {
 
     private final List<NetheriteEntry> entries = NetheriteEntries.all();
 
-    public NoNetheritePlusNeoForge(IEventBus modEventBus) {
+    public NoNetheritePlusNeoForge(IEventBus modEventBus, ModContainer modContainer) {
+        modVersion = modContainer.getModInfo().getVersion().toString();
         GLM_SERIALIZERS.register(modEventBus);
         modEventBus.addListener(this::commonSetup);
         NeoForge.EVENT_BUS.register(this);
 
         StripUpgradeTemplateModifier.shouldStrip = (id, context) -> {
-            String worldName = context.getLevel().dimension().location().toString();
+            String worldName = VersionCompat.dimensionId(context.getLevel());
             boolean strip = getWorldConfigValue("disable_upgrade_templates", worldName, false);
             if (strip) {
                 incrementStatistic("total_template_removals");
@@ -212,7 +214,7 @@ public class NoNetheritePlusNeoForge {
             }
 
             Files.writeString(packRoot.resolve("pack.mcmeta"),
-                "{\"pack\":{\"pack_format\":48,\"description\":\"NoNetheritePlus dynamic overrides\"}}",
+                VersionCompat.packMcmeta("NoNetheritePlus dynamic overrides"),
                 StandardCharsets.UTF_8);
 
             int blocked = 0;
@@ -223,9 +225,9 @@ public class NoNetheritePlusNeoForge {
                 String recipePath = entry.recipeId().substring(entry.recipeId().indexOf(':') + 1);
                 String json = "{"
                     + "\"type\":\"minecraft:smithing_transform\","
-                    + "\"template\":{\"item\":\"minecraft:barrier\"},"
-                    + "\"base\":{\"item\":\"minecraft:barrier\"},"
-                    + "\"addition\":{\"item\":\"minecraft:barrier\"},"
+                    + "\"template\":\"minecraft:barrier\","
+                    + "\"base\":\"minecraft:barrier\","
+                    + "\"addition\":\"minecraft:barrier\","
                     + "\"result\":{\"id\":\"" + entry.itemId() + "\",\"count\":1}"
                     + "}";
                 Files.writeString(recipeDir.resolve(recipePath + ".json"), json, StandardCharsets.UTF_8);
@@ -262,21 +264,15 @@ public class NoNetheritePlusNeoForge {
     }
 
     private int removeNetheriteFromPlayer(ServerPlayer player) {
+        // Index-based access covers main inventory, armor and offhand on every
+        // supported version (the backing lists were split up in 1.21.5+).
         int removed = 0;
         Inventory inventory = player.getInventory();
-        removed += clearNetheriteItems(inventory.items);
-        removed += clearNetheriteItems(inventory.armor);
-        removed += clearNetheriteItems(inventory.offhand);
-        return removed;
-    }
-
-    private int clearNetheriteItems(List<ItemStack> items) {
-        int removed = 0;
-        for (int i = 0; i < items.size(); i++) {
-            ItemStack item = items.get(i);
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack item = inventory.getItem(slot);
             if (isNetheriteMaterial(item)) {
                 removed += item.getCount();
-                items.set(i, ItemStack.EMPTY);
+                inventory.setItem(slot, ItemStack.EMPTY);
             }
         }
         return removed;
@@ -372,7 +368,7 @@ public class NoNetheritePlusNeoForge {
                 return 1;
             })
             .then(Commands.literal("reload")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     saveStatistics();
                     reloadConfig();
@@ -384,19 +380,19 @@ public class NoNetheritePlusNeoForge {
                     return 1;
                 }))
             .then(Commands.literal("stats")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     sendStats(ctx.getSource());
                     return 1;
                 }))
             .then(Commands.literal("statistics")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     sendStats(ctx.getSource());
                     return 1;
                 }))
             .then(Commands.literal("debug")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .executes(ctx -> {
                     ctx.getSource().sendSuccess(() -> Component.literal("§eDebug mode is currently: §f" + (debugMode ? "ON" : "OFF")), false);
                     return 1;
@@ -420,7 +416,7 @@ public class NoNetheritePlusNeoForge {
                         return 1;
                     })))
             .then(Commands.literal("preset")
-                .requires(src -> src.hasPermission(2))
+                .requires(VersionCompat.requiresOp())
                 .then(Commands.literal("save")
                     .then(Commands.argument("name", StringArgumentType.word())
                         .executes(ctx -> presetSave(ctx.getSource(), StringArgumentType.getString(ctx, "name")))))
@@ -436,7 +432,7 @@ public class NoNetheritePlusNeoForge {
 
     private void sendInfo(CommandSourceStack source) {
         source.sendSuccess(() -> Component.literal("§6=== No Netherite+ ==="), false);
-        source.sendSuccess(() -> Component.literal("§eVersion: §f" + MOD_VERSION), false);
+        source.sendSuccess(() -> Component.literal("§eVersion: §f" + modVersion), false);
         source.sendSuccess(() -> Component.literal("§eAuthor: §fSushiMC, SquareDealSam"), false);
         source.sendSuccess(() -> Component.literal("§7Commands: §freload§7, §fstats§7, §fdebug§7, §fpreset"), false);
     }

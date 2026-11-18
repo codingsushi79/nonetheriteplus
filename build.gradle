@@ -1,26 +1,39 @@
 plugins {
     id 'java'
-    id 'net.neoforged.moddev' version '2.0.142'
+    id 'net.neoforged.moddev' version '2.0.148'
     id 'com.gradleup.shadow' version '9.6.0'
 }
 
 group = 'com.codingsushi'
-version = findProperty('releaseVersion') ?: '1.6.0'
+version = findProperty('releaseVersion') ?: '1.6.1'
 
 def mcTarget = findProperty('mcTarget') ?: '1.21'
 
 def targetConfigs = [
-    '26': [
-        neoforgeVersion : '26.1.0.25-beta',
+    '26.3': [
+        minecraftVersion: '26.3',
+        neoforgeVersion : '26.3.0.113',
         javaVersion     : 25,
-        gameVersionTag  : '26.x.x',
+        gameVersionTag  : '26.3',
+        srcDirs         : ['26', '26.3'],
+    ],
+    '26.2': [
+        minecraftVersion: '26.2',
+        neoforgeVersion : '26.2.0.95',
+        javaVersion     : 25,
+        gameVersionTag  : '26.2',
+        srcDirs         : ['26', '26.2'],
     ],
     '1.21': [
+        minecraftVersion: '1.21.4',
         neoforgeVersion : '21.4.157',
         javaVersion     : 21,
         gameVersionTag  : '1.21.x',
+        srcDirs         : ['1.21'],
     ],
 ]
+// Backwards-compatible alias: -PmcTarget=26 builds the newest 26.x target.
+targetConfigs['26'] = targetConfigs['26.3']
 
 if (!targetConfigs.containsKey(mcTarget)) {
     throw new GradleException("Unknown mcTarget '${mcTarget}'. Expected one of: ${targetConfigs.keySet()}")
@@ -38,7 +51,7 @@ sourceSets {
     main {
         java {
             srcDir 'src/main/java'
-            srcDir "src/${mcTarget}/java"
+            activeTarget.srcDirs.each { srcDir "src/${it}/java" }
         }
     }
 }
@@ -62,8 +75,10 @@ dependencies {
 
 processResources {
     inputs.property 'version', version
+    inputs.property 'minecraftVersion', activeTarget.minecraftVersion
     filesMatching('META-INF/neoforge.mods.toml') {
-        expand version: version
+        expand version: version,
+            minecraftRange: mcTarget == '1.21' ? '[1.21.4,1.21.5)' : "[${activeTarget.minecraftVersion},${activeTarget.minecraftVersion}.99)"
     }
 }
 

@@ -20,6 +20,6 @@ description='''Configurable netherite crafting restrictions with material refund
 [[dependencies.nonetheriteplus]]
     modId="minecraft"
     type="required"
-    versionRange="[1.21,)"
+    versionRange="${minecraftRange}"
     ordering="NONE"
     side="BOTH"
